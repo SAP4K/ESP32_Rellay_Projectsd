@@ -1,0 +1,14 @@
+{
+  "C_Cpp.intelliSenseEngine": "default",
+  "idf.flashType": "UART",
+  "idf.portWin": "COM7",
+  "idf.adapterTargetName": "esp32",
+  "files.associations": {
+    "ble_hs_resolv_priv.h": "c",
+    "gpio.h": "c",
+    "ble_gap.h": "c",
+    "sdkconfig.h": "c",
+    "regex": "c",
+    "compare": "c"
+  }
+}
