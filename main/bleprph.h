@@ -11,6 +11,7 @@
 #include "nimble/ble.h"
 #include "modlog/modlog.h"
 #include "esp_peripheral.h"
+#include "driver/gpio.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -18,17 +19,20 @@ extern "C" {
 struct ble_hs_cfg;
 struct ble_gatt_register_ctxt;
 
+
+typedef struct pin_state
+{
+ gpio_num_t pin;
+ uint32_t state 
+} pin_state;
 /** GATT server. */
-#define GATT_SVR_SVC_ALERT_UUID               0x1811
-#define GATT_SVR_CHR_SUP_NEW_ALERT_CAT_UUID   0x2A47
-#define GATT_SVR_CHR_NEW_ALERT                0x2A46
-#define GATT_SVR_CHR_SUP_UNR_ALERT_CAT_UUID   0x2A48
-#define GATT_SVR_CHR_UNR_ALERT_STAT_UUID      0x2A45
-#define GATT_SVR_CHR_ALERT_NOT_CTRL_PT        0x2A44
-
-void gatt_svr_register_cb(struct ble_gatt_register_ctxt *ctxt, void *arg);
+#define GATT_SVR_SVC_ALERT_UUID 0x1811
+#define BATTERY_LEBEL    "DXFFFF"
+#define RELAY_1_TURN_ON  "1x0001"
+#define RELAY_1_TURN_OFF "1x0002"
+#define RELAY_2_TURN_ON  "2x0001"
+#define RELAY_2_TURN_OFF "2x0002"
 int gatt_svr_init(void);
-
 #ifdef __cplusplus
 }
 #endif

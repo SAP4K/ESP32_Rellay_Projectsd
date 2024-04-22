@@ -18,7 +18,6 @@
 #include "console/console.h"
 #include "services/gap/ble_svc_gap.h"
 #include "bleprph.h"
-#include<driver/gpio.h>
 static const char *tag = "NimBLE_BLE_PRPH";
 static int bleprph_gap_event(struct ble_gap_event *event, void *arg);
 static uint8_t own_addr_type;
@@ -154,8 +153,6 @@ void app_main(void)
 {
     int rc;
     /* Initialize NVS — it is used to store PHY calibration data */
-    gpio_set_direction(GPIO_NUM_21,GPIO_MODE_OUTPUT);
-    gpio_set_level(GPIO_NUM_21,0);
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
         ESP_ERROR_CHECK(nvs_flash_erase());
