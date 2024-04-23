@@ -7,6 +7,7 @@
 
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "host/ble_hs.h"
 #include "host/ble_uuid.h"
@@ -55,10 +56,12 @@ static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,struct ble
 
     case BLE_GATT_ACCESS_OP_WRITE_CHR:
         {
-            char data[6];
-            ble_hs_mbuf_to_flat(ctxt->om,data,6,NULL);
+            char* data = (char*)calloc(ctxt->om->om_len, sizeof(char));;
+            //memset(data,'\n',ctxt->om->om_len);
+            ble_hs_mbuf_to_flat(ctxt->om,data,ctxt->om->om_len,NULL);
             ESP_LOGI("Personal","%s",data);
-            check_recived_data(data);
+            //check_recived_data(data);
+            free(data);
             return rc;
         }
         break;
