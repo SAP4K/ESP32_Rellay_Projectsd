@@ -1,3 +1,4 @@
+
 /*
  * SPDX-FileCopyrightText: 2015-2023 Espressif Systems (Shanghai) CO LTD
  *
@@ -13,9 +14,13 @@
 #include "services/gatt/ble_svc_gatt.h"
 #include "bleprph.h"
 #include "services/ans/ble_svc_ans.h"
-static pin_state pins[2];
- 
+#include <driver/gpio.h>
 
+static void init_pins()
+{
+    gpio_set_direction(pins[0].pin,GPIO_MODE_OUTPUT);
+    gpio_set_direction(pins[1].pin,GPIO_MODE_OUTPUT);
+}
 static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,struct ble_gatt_access_ctxt *ctxt,void *arg);
 static const struct ble_gatt_svc_def gatt_svr_svcs[] = {
     {
@@ -32,18 +37,14 @@ static const struct ble_gatt_svc_def gatt_svr_svcs[] = {
     },
     {0,},
 };
-char check_recived_data(char* data)
+uint8_t check_recived_data(char* data)
 {
-    if(strcmp(data,BATTERY_LEBEL) == 0)
-    {
-    }
-      return 'a';
+    return 0;
 }
 static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,struct ble_gatt_access_ctxt *ctxt, void *arg)
 {
     int rc=0;
-    
-    char send[] = "test";
+    char send[] = "testssss";
     switch (ctxt->op) {
     case BLE_GATT_ACCESS_OP_READ_CHR:
     {
@@ -55,7 +56,8 @@ static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,struct ble
     case BLE_GATT_ACCESS_OP_WRITE_CHR:
         {
             char data[6];
-            memcpy(data,(char*)ctxt->om->om_data,6);
+            ble_hs_mbuf_to_flat(ctxt->om,data,6,NULL);
+            ESP_LOGI("Personal","%s",data);
             check_recived_data(data);
             return rc;
         }
@@ -74,6 +76,7 @@ unknown:
 
 int gatt_svr_init(void)
 {
+    init_pins();
     int rc;
     ble_svc_gap_init();
     ble_svc_gatt_init();

@@ -9,6 +9,11 @@
     "ble_gap.h": "c",
     "sdkconfig.h": "c",
     "regex": "c",
-    "compare": "c"
+    "compare": "c",
+    "concepts": "c",
+    "type_traits": "c",
+    "cmath": "c",
+    "limits": "c",
+    "new": "c"
   }
 }

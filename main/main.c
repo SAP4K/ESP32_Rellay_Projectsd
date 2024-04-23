@@ -18,6 +18,7 @@
 #include "console/console.h"
 #include "services/gap/ble_svc_gap.h"
 #include "bleprph.h"
+
 static const char *tag = "NimBLE_BLE_PRPH";
 static int bleprph_gap_event(struct ble_gap_event *event, void *arg);
 static uint8_t own_addr_type;
@@ -54,8 +55,8 @@ static void bleprph_advertise(void)
     memset(&adv_params, 0, sizeof adv_params);
     adv_params.conn_mode = BLE_GAP_CONN_MODE_UND;
     adv_params.disc_mode = BLE_GAP_DISC_MODE_GEN;
-   // adv_params.itvl_min = BLE_GAP_ADV_ITVL_MS(500);
-   // adv_params.itvl_max = BLE_GAP_ADV_ITVL_MS(1000);
+    adv_params.itvl_min = BLE_GAP_ADV_ITVL_MS(1500);
+    adv_params.itvl_max = BLE_GAP_ADV_ITVL_MS(2000);
     
 
   //  struct ble_gap_ext_adv_params params;
@@ -150,6 +151,8 @@ void app_main(void)
 {
     int rc;
     /* Initialize NVS — it is used to store PHY calibration data */
+    gpio_set_direction(GPIO_NUM_21,GPIO_MODE_OUTPUT);
+    gpio_set_level(GPIO_NUM_21,0);
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
         ESP_ERROR_CHECK(nvs_flash_erase());
