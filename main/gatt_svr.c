@@ -16,6 +16,7 @@
 #include "services/ans/ble_svc_ans.h"
 #include <driver/gpio.h>
 #include <esp_sleep.h>
+#define TAG "Personal"
 static void init_pins()
 {
     gpio_set_direction(pins[0].pin,GPIO_MODE_OUTPUT);
@@ -44,45 +45,54 @@ uint8_t check_recived_data(char* data)
     {
         case '1':
         {
+            nr_relay |= 0;
+        }break;
+        case '2':
+        {
             nr_relay |= 1<<7;
         }break;
-        case '2':
-        {
-            nr_relay=0;
+        case 'D':{
+            if(strcmp(data,"DXFFFF") == 0)
+            {
+                return 125;
+            }
+            else
+            {
+                ESP_LOGI(TAG,"Valoare eronata");
+                return 0;
+            }
         }break;
-        case '3':{return 255;}break;
+        default:
+        ESP_LOGI(TAG,"Valoare eronata");
+        return 0;
     }
-    int p = strlen(data);
-    ESP_LOGI("Personal","%d",p);
-    switch(data[p-1])
+    ESP_LOGI(TAG,"%d",strlen(data));
+    char comapre[4];
+    memcpy(comapre,&data[2],3);
+    comapre[3] = '\000';
+    ESP_LOGI(TAG,"Venite %s",comapre);
+    if(strcmp("000",comapre) != 0)
     {
-        case '0':
-        {
-            ESP_LOGI("Personal","Get State");
-        }break;
-        case '1':
-        {
-            ESP_LOGI("Personal","Turn On relay");
-        }break;
-        case '2':
-        {
-            ESP_LOGI("Personal","TURN OFF");
-        }break;
-        case '3':
-        {
-           // ESP_LOGI("Personal","TURN On")
-        }break;
-        case '4':
-        {
-
-        }break;
+        ESP_LOGI(TAG,"Erorre de 0");
+        return 0;
+    }
+    nr_relay += data[strlen(data)-1] - '0';
+    if(nr_relay > 132)
+    {
+        ESP_LOGI("Eroare","Eror mai mare ca 132");
+        return 0;
+    }
+    if(nr_relay<128 && nr_relay>4)
+    {
+        ESP_LOGI("Eroare","Eror mai mare ca 128");
+        return 0;
     }
     return nr_relay;
 }
 static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,struct ble_gatt_access_ctxt *ctxt, void *arg)
 {
     int rc=0;
-    char send[] = "testssss";
+    char *send=NULL;
     switch (ctxt->op) {
     case BLE_GATT_ACCESS_OP_READ_CHR:
     {
@@ -96,7 +106,15 @@ static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,struct ble
             char data[30];
             memset(data,'\0',30);
             ble_hs_mbuf_to_flat(ctxt->om,data,ctxt->om->om_len,NULL);
-            check_recived_data(data);
+            switch(check_recived_data(data))
+            {
+
+                default:
+                {
+
+                    ESP_LOGI(TAG,"%s",send);
+                }break;
+            }
             return rc;
         }
         break;
