@@ -48,7 +48,9 @@ static pin_state pins[2] =
 {.pin=GPIO_NUM_26, .state=false}
 #endif
 };
-
+int8_t check_recived_data(char*);
+bool get_state(pin_state*);
+void set_state(pin_state*,bool);
 int gatt_svr_init(void);
 #ifdef __cplusplus
 }

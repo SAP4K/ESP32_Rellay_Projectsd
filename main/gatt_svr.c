@@ -19,8 +19,8 @@
 #define TAG "Personal"
 static void init_pins()
 {
-    gpio_set_direction(pins[0].pin,GPIO_MODE_OUTPUT);
     gpio_set_direction(pins[1].pin,GPIO_MODE_OUTPUT);
+    gpio_set_direction(pins[0].pin,GPIO_MODE_OUTPUT);
 }
 static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,struct ble_gatt_access_ctxt *ctxt,void *arg);
 static const struct ble_gatt_svc_def gatt_svr_svcs[] = {
@@ -29,7 +29,7 @@ static const struct ble_gatt_svc_def gatt_svr_svcs[] = {
         .uuid = BLE_UUID16_DECLARE(0x180),
         .characteristics = (struct ble_gatt_chr_def[])
         { {
-                .uuid = BLE_UUID16_DECLARE(0xFEEF4),
+                .uuid = BLE_UUID16_DECLARE(0xFEF4),
                 .access_cb = gatt_svc_access,
                 .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_WRITE,
             }, 
@@ -38,9 +38,10 @@ static const struct ble_gatt_svc_def gatt_svr_svcs[] = {
     },
     {0,},
 };
-uint8_t check_recived_data(char* data)
+int8_t check_recived_data(char* data)
 {
     uint8_t nr_relay=0;
+    ESP_LOGI(TAG,"%s",data);
     switch(data[0])
     {
         case '1':
@@ -49,70 +50,159 @@ uint8_t check_recived_data(char* data)
         }break;
         case '2':
         {
-            nr_relay |= 1<<7;
+            nr_relay |= 1<<6;
         }break;
         case 'D':{
             if(strcmp(data,"DXFFFF") == 0)
             {
-                return 125;
+                return 99;
             }
             else
             {
                 ESP_LOGI(TAG,"Valoare eronata");
-                return 0;
+                return -1;
             }
         }break;
         default:
         ESP_LOGI(TAG,"Valoare eronata");
-        return 0;
+        return -1;
     }
-    ESP_LOGI(TAG,"%d",strlen(data));
     char comapre[4];
     memcpy(comapre,&data[2],3);
     comapre[3] = '\000';
-    ESP_LOGI(TAG,"Venite %s",comapre);
     if(strcmp("000",comapre) != 0)
     {
         ESP_LOGI(TAG,"Erorre de 0");
-        return 0;
+        return -1;
     }
-    nr_relay += data[strlen(data)-1] - '0';
-    if(nr_relay > 132)
+    nr_relay += data[strlen(data)-1] - 47;
+    if(nr_relay > 69)
     {
-        ESP_LOGI("Eroare","Eror mai mare ca 132");
-        return 0;
+        return -1;
     }
-    if(nr_relay<128 && nr_relay>4)
+    if(nr_relay<64 && nr_relay>5 && nr_relay==0)
     {
-        ESP_LOGI("Eroare","Eror mai mare ca 128");
-        return 0;
+        return -1;
     }
     return nr_relay;
+}
+void set_state(pin_state* pin,bool state)
+{
+    if(state)
+    {
+        gpio_set_level(pin->pin,1);
+        pin->state = true;
+
+    }
+    else
+    {
+        gpio_set_level(pin->pin,0);
+        pin->state = false;
+    }
+}
+bool get_state(pin_state* pin)
+{
+    if(pin->state)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }
 static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,struct ble_gatt_access_ctxt *ctxt, void *arg)
 {
     int rc=0;
-    char *send=NULL;
+    static char send[30];
+    static uint8_t characters=0;
     switch (ctxt->op) {
     case BLE_GATT_ACCESS_OP_READ_CHR:
     {
-        rc = os_mbuf_append(ctxt->om,send,sizeof(send));
-        return rc == 0 ? 0 : BLE_ATT_ERR_INSUFFICIENT_RES;
+        rc = os_mbuf_append(ctxt->om,send,characters);
+        ESP_LOGI(TAG,"%s",send);
+        memset(send,'\000',30);
+        characters = 0;
+        return rc;
     }
         goto unknown;
 
     case BLE_GATT_ACCESS_OP_WRITE_CHR:
         {
             char data[30];
-            memset(data,'\0',30);
+            memset(data,'\000',30);
             ble_hs_mbuf_to_flat(ctxt->om,data,ctxt->om->om_len,NULL);
             switch(check_recived_data(data))
             {
-
+                case 1:
+                {
+                    if(get_state(&pins[0]))
+                    {
+                        strcpy(send,"1_ON");
+                        characters = 5;
+                    }
+                    else
+                    {
+                        strcpy(send,"1_OFF");
+                        characters = 6;
+                    }
+                }break;
+                case 2:
+                {
+                    set_state(&pins[0],true);
+                    ESP_LOGI(TAG,"Turn ON rellay 1");
+                }break;
+                case 3:
+                {
+                    set_state(&pins[0],false);
+                    ESP_LOGI(TAG,"Turn OFF rellay 1");
+                }break;
+                case 4:
+                {
+                    ESP_LOGI(TAG,"Turn ON with timer rellay 1");
+                }break;
+                case 5:
+                {
+                    ESP_LOGI(TAG,"TURN OFF timer for rellay 1");
+                }break;
+                case 65:
+                {
+                    if(get_state(&pins[1]))
+                    {
+                        strcpy(send,"2_ON");
+                        characters = 5;
+                    }
+                    else
+                    {
+                        strcpy(send,"3_OFF");
+                        characters = 6;
+                    }
+                }break;
+                case 66:
+                {
+                    set_state(&pins[1],true);
+                    ESP_LOGI(TAG,"Turn ON rellay 2");     
+                }break;
+                case 67:
+                {
+                    set_state(&pins[1],false);
+                    ESP_LOGI(TAG,"Turn OFF rellay 2");
+                }break;
+                case 68:
+                {
+                    ESP_LOGI(TAG,"Turn ON with timer rellay 1");
+                }break;
+                case 69:
+                {
+                    ESP_LOGI(TAG,"Turn OFF timer for rellay 2");
+                }break;
+                case 99:
+                {
+                    ESP_LOGI(TAG,"Battery level");
+                }break;
                 default:
                 {
-
-                    ESP_LOGI(TAG,"%s",send);
+                    ESP_LOGI(TAG,"Error");
                 }break;
             }
             return rc;

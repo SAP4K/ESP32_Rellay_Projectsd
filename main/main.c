@@ -69,7 +69,6 @@ static void bleprph_advertise(void)
     };
     fields.num_uuids16 = 1;
     fields.uuids16_is_complete = 1;
-
     rc = ble_gap_adv_set_fields(&fields);
     if (rc != 0) {
         MODLOG_DFLT(ERROR, "error setting advertisement data; rc=%d\n", rc);
@@ -80,8 +79,8 @@ static void bleprph_advertise(void)
     memset(&adv_params, 0, sizeof adv_params);
     adv_params.conn_mode = BLE_GAP_CONN_MODE_UND;
     adv_params.disc_mode = BLE_GAP_DISC_MODE_GEN;
-    adv_params.itvl_min = BLE_GAP_ADV_ITVL_MS(1000);
-    adv_params.itvl_max = BLE_GAP_ADV_ITVL_MS(1500);
+    adv_params.itvl_min = BLE_GAP_ADV_ITVL_MS(1500);
+    adv_params.itvl_max = BLE_GAP_ADV_ITVL_MS(2000);
     rc = ble_gap_adv_start(own_addr_type, NULL, BLE_HS_FOREVER,
                            &adv_params, bleprph_gap_event, NULL);
     if (rc != 0) {
