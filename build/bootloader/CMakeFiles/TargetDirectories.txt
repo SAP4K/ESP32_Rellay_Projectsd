@@ -16,8 +16,9 @@ C:/ESP_Projects/power_save/build/bootloader/CMakeFiles/edit_cache.dir
 C:/ESP_Projects/power_save/build/bootloader/CMakeFiles/rebuild_cache.dir
 C:/ESP_Projects/power_save/build/bootloader/esp-idf/CMakeFiles/edit_cache.dir
 C:/ESP_Projects/power_save/build/bootloader/esp-idf/CMakeFiles/rebuild_cache.dir
-C:/ESP_Projects/power_save/build/bootloader/esp-idf/riscv/CMakeFiles/edit_cache.dir
-C:/ESP_Projects/power_save/build/bootloader/esp-idf/riscv/CMakeFiles/rebuild_cache.dir
+C:/ESP_Projects/power_save/build/bootloader/esp-idf/xtensa/CMakeFiles/__idf_xtensa.dir
+C:/ESP_Projects/power_save/build/bootloader/esp-idf/xtensa/CMakeFiles/edit_cache.dir
+C:/ESP_Projects/power_save/build/bootloader/esp-idf/xtensa/CMakeFiles/rebuild_cache.dir
 C:/ESP_Projects/power_save/build/bootloader/esp-idf/newlib/CMakeFiles/edit_cache.dir
 C:/ESP_Projects/power_save/build/bootloader/esp-idf/newlib/CMakeFiles/rebuild_cache.dir
 C:/ESP_Projects/power_save/build/bootloader/esp-idf/soc/CMakeFiles/__idf_soc.dir
@@ -54,8 +55,8 @@ C:/ESP_Projects/power_save/build/bootloader/esp-idf/esp_system/CMakeFiles/rebuil
 C:/ESP_Projects/power_save/build/bootloader/esp-idf/esp_hw_support/CMakeFiles/__idf_esp_hw_support.dir
 C:/ESP_Projects/power_save/build/bootloader/esp-idf/esp_hw_support/CMakeFiles/edit_cache.dir
 C:/ESP_Projects/power_save/build/bootloader/esp-idf/esp_hw_support/CMakeFiles/rebuild_cache.dir
-C:/ESP_Projects/power_save/build/bootloader/esp-idf/esp_hw_support/port/esp32c3/CMakeFiles/edit_cache.dir
-C:/ESP_Projects/power_save/build/bootloader/esp-idf/esp_hw_support/port/esp32c3/CMakeFiles/rebuild_cache.dir
+C:/ESP_Projects/power_save/build/bootloader/esp-idf/esp_hw_support/port/esp32/CMakeFiles/edit_cache.dir
+C:/ESP_Projects/power_save/build/bootloader/esp-idf/esp_hw_support/port/esp32/CMakeFiles/rebuild_cache.dir
 C:/ESP_Projects/power_save/build/bootloader/esp-idf/esp_common/CMakeFiles/__idf_esp_common.dir
 C:/ESP_Projects/power_save/build/bootloader/esp-idf/esp_common/CMakeFiles/edit_cache.dir
 C:/ESP_Projects/power_save/build/bootloader/esp-idf/esp_common/CMakeFiles/rebuild_cache.dir

@@ -1,4 +1,4 @@
-C:/ESP_Projects/power_save/build/esp-idf/riscv/libriscv.a
+C:/ESP_Projects/power_save/build/esp-idf/xtensa/libxtensa.a
 C:/ESP_Projects/power_save/build/esp-idf/esp_ringbuf/libesp_ringbuf.a
 C:/ESP_Projects/power_save/build/esp-idf/efuse/libefuse.a
 C:/ESP_Projects/power_save/build/esp-idf/driver/libdriver.a
@@ -57,6 +57,7 @@ C:/ESP_Projects/power_save/build/esp-idf/sdmmc/libsdmmc.a
 C:/ESP_Projects/power_save/build/esp-idf/fatfs/libfatfs.a
 C:/ESP_Projects/power_save/build/esp-idf/json/libjson.a
 C:/ESP_Projects/power_save/build/esp-idf/mqtt/libmqtt.a
+C:/ESP_Projects/power_save/build/esp-idf/perfmon/libperfmon.a
 C:/ESP_Projects/power_save/build/esp-idf/spiffs/libspiffs.a
 C:/ESP_Projects/power_save/build/esp-idf/wifi_provisioning/libwifi_provisioning.a
 C:/ESP_Projects/power_save/build/esp-idf/main/libmain.a
