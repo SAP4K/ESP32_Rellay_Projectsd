@@ -27,7 +27,7 @@ typedef struct pin_state
 } pin_state;
 
 //------Microcontroler------
-#define ESP32
+#define ESP_C3
 
 //------Comenzile de la aplicatie------
 #define GATT_SVR_SVC_ALERT_UUID 0x1811
