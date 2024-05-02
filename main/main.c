@@ -79,8 +79,8 @@ static void bleprph_advertise(void)
     memset(&adv_params, 0, sizeof adv_params);
     adv_params.conn_mode = BLE_GAP_CONN_MODE_UND;
     adv_params.disc_mode = BLE_GAP_DISC_MODE_GEN;
-    adv_params.itvl_min = BLE_GAP_ADV_ITVL_MS(1000);
-    adv_params.itvl_max = BLE_GAP_ADV_ITVL_MS(1500);
+    adv_params.itvl_min = BLE_GAP_ADV_ITVL_MS(500);
+    adv_params.itvl_max = BLE_GAP_ADV_ITVL_MS(1000);
     rc = ble_gap_adv_start(own_addr_type, NULL, BLE_HS_FOREVER,
                            &adv_params, bleprph_gap_event, NULL);
     if (rc != 0) {
@@ -162,15 +162,15 @@ void bleprph_host_task(void *param)
 
 static void init_pins()
 {
-    gpio_set_direction(pins[1].pin,GPIO_MODE_OUTPUT);
     gpio_set_direction(pins[0].pin,GPIO_MODE_OUTPUT);
+    gpio_set_direction(pins[1].pin,GPIO_MODE_OUTPUT);
     gpio_set_level(pins[0].pin,0);
     gpio_set_level(pins[1].pin,0);
     gpio_hold_en(pins[0].pin);
     gpio_hold_en(pins[1].pin);
 }
-
-
+static struct tm t2;
+static void periodic_timer_callback(void *arg);
 void app_main(void)
 {
     int rc;
@@ -208,4 +208,32 @@ void app_main(void)
     /* XXX Need to have template for store */
     ble_store_config_init();
     nimble_port_freertos_init(bleprph_host_task);
+  t2.tm_mon = 5;
+  t2.tm_mday = 2;
+  t2.tm_hour = 17;
+  t2.tm_min = 9;
+  t2.tm_sec = 30;
+  ESP_LOGW("Personal","%d",  t2.tm_sec);
+  t2.tm_sec+=2;
+  ESP_LOGW("Personal","%d",  t2.tm_sec);
+      esp_timer_create_args_t timer_periodic = {
+        .callback = periodic_timer_callback,
+        .name = "test",
+    };
+    esp_timer_handle_t timer_handler;
+    esp_timer_create(&timer_periodic,&timer_handler);
+    //esp_timer_start_periodic(timer_handler,1000000);
+    time_t t = 1714661220;
+    struct tm * time = localtime(&t);
+    ESP_LOGI("Personal","%d:%d:%d", time->tm_hour,time->tm_min,time->tm_sec);
 }
+time_t tinme_in_seconds = 1714662035;
+static void periodic_timer_callback(void *arg)
+{
+
+    struct tm * time = localtime(&tinme_in_seconds);
+    ESP_LOGI("Personal","%d:%d:%d", time->tm_hour,time->tm_min,time->tm_sec);
+    //free(time);
+    tinme_in_seconds++;
+}
+

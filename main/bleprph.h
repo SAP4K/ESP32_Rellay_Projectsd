@@ -12,6 +12,8 @@
 #include "modlog/modlog.h"
 #include "esp_peripheral.h"
 #include "driver/gpio.h"
+#include "esp_sleep.h"
+#include "esp_sntp.h"
 #define ESP32_C3
 #ifdef __cplusplus
 extern "C" {

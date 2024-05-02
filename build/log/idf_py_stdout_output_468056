@@ -1,0 +1,5 @@
+[1/4] cmd.exe /C "cd /D C:\ESP_Projects\power_save\build\esp-idf\esptool_py && C:\Espressif\python_env\idf5.1_py3.11_env\Scripts\python.exe C:/Espressif/frameworks/esp-idf-v5.1/components/partition_table/check_sizes.py --offset 0x8000 partition --type app C:/ESP_Projects/power_save/build/partition_table/partition-table.bin C:/ESP_Projects/power_save/build/power_save.bin"
+power_save.bin binary size 0x83140 bytes. Smallest app partition is 0x100000 bytes. 0x7cec0 bytes (49%) free.
+[2/4] Performing build step for 'bootloader'
+[1/1] cmd.exe /C "cd /D C:\ESP_Projects\power_save\build\bootloader\esp-idf\esptool_py && C:\Espressif\python_env\idf5.1_py3.11_env\Scripts\python.exe C:/Espressif/frameworks/esp-idf-v5.1/components/partition_table/check_sizes.py --offset 0x8000 bootloader 0x0 C:/ESP_Projects/power_save/build/bootloader/bootloader.bin"
+Bootloader binary size 0x5060 bytes. 0x2fa0 bytes (37%) free.
