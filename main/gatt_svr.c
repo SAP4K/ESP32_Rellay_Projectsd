@@ -276,7 +276,24 @@ static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,
                 case 99:
                 {
                     strcpy(send,"50");
-                    ESP_LOGI(TAG,"Battery level");
+                        int adc_raw;
+                        int voltage;
+                        adc_oneshot_read(adc1_handle,ADC_CHANNEL_3,&adc_raw);
+                        #if ADC_CALI_SCHEME_CURVE_FITTING_SUPPORTED
+                        adc_cali_curve_fitting_config_t cali_conf = 
+                        {
+                            .unit_id = ADC_UNIT_1,
+                            .atten = ADC_ATTEN_DB_12,
+                            .bitwidth = ADC_BITWIDTH_12
+                        };
+                        adc_cali_create_scheme_curve_fitting(&cali_conf,&adc_calibration);
+                        adc_cali_raw_to_voltage(adc_calibration,adc_raw,&voltage);
+                        #endif
+                        ESP_LOGI(TAG, "ADC%d Channel[%d] Raw Data: %d", ADC_UNIT_1 + 1, ADC_CHANNEL_3, adc_raw);
+                        #if ADC_CALI_SCHEME_CURVE_FITTING_SUPPORTED
+                        ESP_LOGI(TAG, "ADC%d Channel[%d] Cali Voltage: %d mV", ADC_UNIT_1 + 1, ADC_CHANNEL_6, voltage);
+                        adc_cali_delete_scheme_curve_fitting(adc_calibration);
+                        #endif
                 }break;
                 default:
                 {
@@ -325,11 +342,24 @@ void gatt_svr_register_cb(struct ble_gatt_register_ctxt *ctxt, void *arg)
         break;
     }
 }
+void adc_init()
+{
+    adc_oneshot_unit_init_cfg_t init_config1 = {
+    .unit_id = ADC_UNIT_1,
+    };
+    ESP_ERROR_CHECK(adc_oneshot_new_unit(&init_config1, &adc1_handle));
 
+
+    adc_oneshot_chan_cfg_t config = {
+    .bitwidth = ADC_BITWIDTH_12,
+    .atten = ADC_ATTEN_DB_12,
+    };
+    ESP_ERROR_CHECK(adc_oneshot_config_channel(adc1_handle, ADC_CHANNEL_3, &config));
+}
 int
 gatt_svr_init(void)
 {
-    
+    adc_init();
     int rc;
     ble_svc_gap_init();
     ble_svc_gatt_init();

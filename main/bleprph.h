@@ -12,6 +12,12 @@
 #include "esp_sleep.h"
 #include "esp_sntp.h"
 #include "esp_timer.h"
+#include "soc/soc_caps.h"
+#include "esp_log.h"
+#include "esp_adc/adc_oneshot.h"
+#include "esp_adc/adc_cali.h"
+#include "esp_adc/adc_cali_scheme.h"
+
 #define ESP32_C3
 
 struct ble_hs_cfg;
@@ -57,3 +63,6 @@ void set_state(pin_state*,bool);
 int gatt_svr_init(void);
 void inti_time(time_t);
 static void periodic_timer_callback(void *arg);
+void adc_init();
+static adc_oneshot_unit_handle_t adc1_handle;
+static adc_cali_handle_t adc_calibration = NULL;
