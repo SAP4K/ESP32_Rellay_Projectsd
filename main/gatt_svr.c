@@ -163,7 +163,6 @@ static void periodic_timer_callback(void *arg)
 {
     time_t *tinme_in_seconds = (time_t*)arg;
     gettimeofday(&tv_now, NULL);
-    
     ESP_LOGI(TAG,"Seconds: %lld\n",tv_now.tv_sec);
     static uint64_t test = 0;
     //(*tinme_in_seconds) += (tv_now.tv_sec-test);
@@ -275,7 +274,6 @@ static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,
                 }break;
                 case 99:
                 {
-                    strcpy(send,"50");
                         int adc_raw;
                         int voltage;
                         adc_oneshot_read(adc1_handle,ADC_CHANNEL_4,&adc_raw);
@@ -385,7 +383,7 @@ int
 gatt_svr_init(void)
 {
     adc_init();
-    //inti_time(1716301217);
+    inti_time(1716301217);
     int rc;
     ble_svc_gap_init();
     ble_svc_gatt_init();
