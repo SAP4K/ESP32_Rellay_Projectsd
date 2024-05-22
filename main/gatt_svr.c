@@ -157,7 +157,7 @@ void inti_time(time_t time)
     static esp_timer_handle_t tim;
     tv_now.tv_sec = time+10800;
     esp_timer_create(&timer_periodic,&tim);
-    esp_timer_start_periodic(tim,10000000);
+    esp_timer_start_periodic(tim,1000000);
 }
 static void periodic_timer_callback(void *arg)
 {
@@ -216,7 +216,7 @@ static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,
                 {
                     pins[0].rellay_state = true;
                     set_state(&pins[0],true);
-                    ESP_LOGI(TAG,"Turn ON rellay 1");
+                    ESP_LOGI(TAG,"Sunt aici Turn ON rellay 1");
                 }break;
                 case 3:
                 {
@@ -278,7 +278,7 @@ static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,
                     strcpy(send,"50");
                         int adc_raw;
                         int voltage;
-                        adc_oneshot_read(adc1_handle,ADC_CHANNEL_3,&adc_raw);
+                        adc_oneshot_read(adc1_handle,ADC_CHANNEL_4,&adc_raw);
                         #if ADC_CALI_SCHEME_CURVE_FITTING_SUPPORTED
                         adc_cali_curve_fitting_config_t cali_conf = 
                         {
@@ -289,9 +289,36 @@ static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,
                         adc_cali_create_scheme_curve_fitting(&cali_conf,&adc_calibration);
                         adc_cali_raw_to_voltage(adc_calibration,adc_raw,&voltage);
                         #endif
-                        ESP_LOGI(TAG, "ADC%d Channel[%d] Raw Data: %d", ADC_UNIT_1 + 1, ADC_CHANNEL_3, adc_raw);
+                        ESP_LOGI(TAG, "ADC%d Channel[%d] Raw Data: %d", ADC_UNIT_1 + 1, ADC_CHANNEL_4, adc_raw);
                         #if ADC_CALI_SCHEME_CURVE_FITTING_SUPPORTED
-                        ESP_LOGI(TAG, "ADC%d Channel[%d] Cali Voltage: %d mV", ADC_UNIT_1 + 1, ADC_CHANNEL_6, voltage);
+                        ESP_LOGI(TAG, "ADC%d Channel[%d] Cali Voltage: %d mV", ADC_UNIT_1 + 1, ADC_CHANNEL_4, voltage);
+                        float dates = ((float)voltage/1000)-0.9;
+                        int sendd =  (int)(dates*100)/0.6;
+                        if(sendd > 100)
+                        {
+                            sendd = 100;
+                        }
+                        if(sendd<1)
+                        {
+                            sendd = 0;
+                        }
+                        itoa(sendd,send,10);
+                        ESP_LOGI(TAG,"dates: %f",dates);
+                        ESP_LOGI(TAG,"procentaj: %d",sendd);
+                        if(sendd>=100)
+                        {
+                            characters = 3;
+                        }
+                        if(sendd>=10 && sendd<100)
+                        {
+                            characters = 2;
+                        }
+                        if(sendd<10)
+                        {
+                          characters = 1;  
+                        }
+                        ESP_LOGI(TAG,"In string: %s",send);
+                        ESP_LOGI(TAG,"Nr caractere: %d",characters);
                         adc_cali_delete_scheme_curve_fitting(adc_calibration);
                         #endif
                 }break;
@@ -348,18 +375,17 @@ void adc_init()
     .unit_id = ADC_UNIT_1,
     };
     ESP_ERROR_CHECK(adc_oneshot_new_unit(&init_config1, &adc1_handle));
-
-
     adc_oneshot_chan_cfg_t config = {
     .bitwidth = ADC_BITWIDTH_12,
     .atten = ADC_ATTEN_DB_12,
     };
-    ESP_ERROR_CHECK(adc_oneshot_config_channel(adc1_handle, ADC_CHANNEL_3, &config));
+    ESP_ERROR_CHECK(adc_oneshot_config_channel(adc1_handle, ADC_CHANNEL_4, &config));
 }
 int
 gatt_svr_init(void)
 {
     adc_init();
+    //inti_time(1716301217);
     int rc;
     ble_svc_gap_init();
     ble_svc_gatt_init();
@@ -374,9 +400,6 @@ gatt_svr_init(void)
     if (rc != 0) {
         return rc;
     }
-
-    /* Setting a value for the read-only descriptor */
-
 
     return 0;
 }

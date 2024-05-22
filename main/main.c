@@ -80,7 +80,7 @@ static void bleprph_advertise(void)
     adv_params.conn_mode = BLE_GAP_CONN_MODE_UND;
     adv_params.disc_mode = BLE_GAP_DISC_MODE_GEN;
     adv_params.itvl_min = BLE_GAP_ADV_ITVL_MS(500);
-    adv_params.itvl_max = BLE_GAP_ADV_ITVL_MS(3000);
+    adv_params.itvl_max = BLE_GAP_ADV_ITVL_MS(4000);
     rc = ble_gap_adv_start(own_addr_type, NULL, BLE_HS_FOREVER,
                            &adv_params, bleprph_gap_event, NULL);
     if (rc != 0) {
@@ -125,7 +125,7 @@ static void bleprph_on_reset(int reason)
 {
     MODLOG_DFLT(ERROR, "Resetting state; reason=%d\n", reason);
 }
-static uint8_t ID_Dispozitiv_blutooth[6] = {0x22,0x22,0x22,0x22,0x22,0x22};
+static uint8_t ID_Dispozitiv_blutooth[6] = {0x11,0x11,0x11,0x11,0x11,0x11};
 static void bleprph_on_sync(void)
 {
     int rc;
@@ -201,7 +201,7 @@ void app_main(void)
     rc = gatt_svr_init();
     assert(rc == 0);
     /* Set the default device name. */
-    rc = ble_svc_gap_device_name_set("nimble-bleprph3");
+    rc = ble_svc_gap_device_name_set("nimble-bleprph1");
     assert(rc == 0);
     /* XXX Need to have template for store */
     ble_store_config_init();
