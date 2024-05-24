@@ -12,6 +12,7 @@
 #include "services/gap/ble_svc_gap.h"
 #include "services/gatt/ble_svc_gatt.h"
 #include "bleprph.h"
+#include <math.h>
 #include "services/ans/ble_svc_ans.h"
 #define TAG "Personal"
 /*** Maximum number of characteristics with the notify flag ***/
@@ -157,7 +158,7 @@ void inti_time(time_t time)
     static esp_timer_handle_t tim;
     tv_now.tv_sec = time+10800;
     esp_timer_create(&timer_periodic,&tim);
-    esp_timer_start_periodic(tim,1000000);
+    //esp_timer_start_periodic(tim,1000000);
 }
 static void periodic_timer_callback(void *arg)
 {
@@ -290,15 +291,17 @@ static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,
                         ESP_LOGI(TAG, "ADC%d Channel[%d] Raw Data: %d", ADC_UNIT_1 + 1, ADC_CHANNEL_4, adc_raw);
                         #if ADC_CALI_SCHEME_CURVE_FITTING_SUPPORTED
                         ESP_LOGI(TAG, "ADC%d Channel[%d] Cali Voltage: %d mV", ADC_UNIT_1 + 1, ADC_CHANNEL_4, voltage);
-                        float dates = ((float)voltage/1000)-0.9;
-                        int sendd =  (int)(dates*100)/0.6;
+                        float dates = ((float)voltage/1000)-0.712;
+                        int sendd =  (int)round((dates*100)/0.807);
+                        ESP_LOGI(TAG,"%f",dates);
+                        ESP_LOGI(TAG,"%d",sendd);
                         if(sendd > 100)
                         {
                             sendd = 100;
                         }
                         if(sendd<1)
                         {
-                            sendd = 0;
+                            sendd = 1;
                         }
                         itoa(sendd,send,10);
                         ESP_LOGI(TAG,"dates: %f",dates);
