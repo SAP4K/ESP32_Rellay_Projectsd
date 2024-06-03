@@ -68,7 +68,7 @@ int8_t check_recived_data(char* data)
                 if(config_time){
                     if(strcmp(comparare,"0x0000") == 0)
                     {
-                        inti_time(1715126300);
+                        //inti_time(1715126300);
                     }
                     config_time = false;
                 }
@@ -144,35 +144,56 @@ bool get_state(pin_state* pin)
         return false;
     }
 }
-struct timeval tv_now;
-static void periodic_timer_callback(void *arg);
-void inti_time(time_t time)
+static void periodic_timer_run(void *arg);
+void inti_time(pin_state* pin)
 {
-    volatile static time_t time_in_seconds = 1715791073;
-    time_in_seconds = time+10800;
+    time_t interval;
+    struct tm* timeinfo = localtime(&current_time);
+    ESP_LOGI(TAG,"Ore: %d Minute: %d Sec: %d ",timeinfo->tm_hour,timeinfo->tm_min,timeinfo->tm_sec);
+    time_t current_time_in_seconds = timeinfo->tm_hour*60*60 + timeinfo->tm_min*60+ timeinfo->tm_sec;
+    pin->timers.time_begin = current_time_in_seconds + 60;
     esp_timer_create_args_t timer_periodic = {
-        .callback = periodic_timer_callback,
+        .callback = periodic_timer_run,
         .name = "test",
-        .arg = &time_in_seconds,
+        .arg = pin,
     };
-    static esp_timer_handle_t tim;
-    tv_now.tv_sec = time+10800;
-    esp_timer_create(&timer_periodic,&tim);
-    //esp_timer_start_periodic(tim,1000000);
+    if(pin->timers.time_begin > current_time_in_seconds)
+    {
+        ESP_LOGI(TAG,"Sunt aici");
+        interval = pin->timers.time_begin - current_time_in_seconds;
+    }
+    else
+    {
+        interval = current_time_in_seconds - pin->timers.time_begin;
+        ESP_LOGI(TAG,"Test %lld",interval);
+        interval = 86400 - interval;
+        ESP_LOGI(TAG,"A ramas %lld",interval);
+    }
+    ESP_LOGI(TAG,"Timul curent secunde: %lld",current_time_in_seconds);
+    ESP_LOGI(TAG,"Timpul setat: %lld",pin->timers.time_begin);
+    esp_timer_create(&timer_periodic,&pin->timers.timer_handler);
+    ESP_LOGI(TAG,"TIMPUL PENTRU SETARE %lld",interval*1000000);
+    esp_timer_start_periodic(pin->timers.timer_handler,interval*1000000);
 }
-static void periodic_timer_callback(void *arg)
+static void periodic_timer_run(void *arg)
 {
-    time_t *tinme_in_seconds = (time_t*)arg;
-    gettimeofday(&tv_now, NULL);
-    ESP_LOGI(TAG,"Seconds: %lld\n",tv_now.tv_sec);
-    static uint64_t test = 0;
-    //(*tinme_in_seconds) += (tv_now.tv_sec-test);
-    time_t timpul = (*tinme_in_seconds) + tv_now.tv_sec;
-    struct tm* timeinfo = localtime(&timpul);
-    ESP_LOGI("Personal","Anul:%d Luna:%d ziua:%d %d:%d:%d",timeinfo->tm_year, timeinfo->tm_mon, timeinfo->tm_mday, timeinfo->tm_hour,timeinfo->tm_min,timeinfo->tm_sec);
-    time_t time = 131071;
-    time_t check = time & ((*tinme_in_seconds)-10800);
-    test = tv_now.tv_sec;
+    time_t interval = 86400000000;
+    uint64_t current =  round(esp_timer_get_time()/1000000);
+    time_t rr = current_time + current;
+    struct tm* timeinfo = localtime(&rr);
+    ESP_LOGI(TAG,"Ore: %d Minute: %d Sec: %d ",timeinfo->tm_hour,timeinfo->tm_min,timeinfo->tm_sec);
+    pin_state* pin = (pin_state*)arg;
+    esp_timer_stop(pin->timers.timer_handler);
+    set_state(pin,true);
+    esp_timer_create_args_t timer_periodic = {
+        .callback = periodic_timer_run,
+        .name = "test",
+        .arg = pin,
+    };
+    esp_timer_create(&timer_periodic,&pin->timers.timer_handler);
+    esp_timer_start_periodic(pin->timers.timer_handler,interval);
+    ESP_LOGI(TAG,"%lld",pin->timers.time_begin);
+    ESP_LOGI(TAG,"%lld",interval);
 }
 
 static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,
@@ -291,8 +312,8 @@ static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,
                         ESP_LOGI(TAG, "ADC%d Channel[%d] Raw Data: %d", ADC_UNIT_1 + 1, ADC_CHANNEL_4, adc_raw);
                         #if ADC_CALI_SCHEME_CURVE_FITTING_SUPPORTED
                         ESP_LOGI(TAG, "ADC%d Channel[%d] Cali Voltage: %d mV", ADC_UNIT_1 + 1, ADC_CHANNEL_4, voltage);
-                        float dates = ((float)voltage/1000)-0.712;
-                        int sendd =  (int)round((dates*100)/0.807);
+                        float dates = ((float)voltage/1000)-0.565;
+                        int sendd =  (int)round((dates*100)/0.959);
                         ESP_LOGI(TAG,"%f",dates);
                         ESP_LOGI(TAG,"%d",sendd);
                         if(sendd > 100)
@@ -301,7 +322,7 @@ static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,
                         }
                         if(sendd<1)
                         {
-                            sendd = 1;
+                            sendd = 0;
                         }
                         itoa(sendd,send,10);
                         ESP_LOGI(TAG,"dates: %f",dates);
@@ -382,25 +403,40 @@ void adc_init()
     };
     ESP_ERROR_CHECK(adc_oneshot_config_channel(adc1_handle, ADC_CHANNEL_4, &config));
 }
+void timer()
+{
+    uint64_t current =  round(esp_timer_get_time()/1000000);
+    ESP_LOGI(TAG,"Timpul de la inceput: %lld",current);
+    time_t rr = current_time + current;
+    struct tm* timeinfo = localtime(&rr);
+    ESP_LOGI(TAG,"Ore: %d Minute: %d Sec: %d ",timeinfo->tm_hour,timeinfo->tm_min,timeinfo->tm_sec);
+    
+}
 int
 gatt_svr_init(void)
 {
+    current_time = 1717346750+10800;
+    inti_time(&pins[0]);
+    esp_timer_handle_t handler;
+    esp_timer_create_args_t asp = 
+    {
+        .callback = timer,
+        .name = "abc"
+    };
+    esp_timer_create(&asp,&handler);
+    esp_timer_start_periodic(handler,30000000);
     adc_init();
-    inti_time(1716301217);
     int rc;
     ble_svc_gap_init();
     ble_svc_gatt_init();
     ble_svc_ans_init();
-
     rc = ble_gatts_count_cfg(gatt_svr_svcs);
     if (rc != 0) {
         return rc;
     }
-
     rc = ble_gatts_add_svcs(gatt_svr_svcs);
     if (rc != 0) {
         return rc;
     }
-
     return 0;
 }

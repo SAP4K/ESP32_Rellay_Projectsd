@@ -23,6 +23,12 @@
 struct ble_hs_cfg;
 struct ble_gatt_register_ctxt;
 
+typedef struct personal_timer
+{
+ esp_timer_handle_t timer_handler;
+ time_t time_begin;
+ time_t time_end;
+}personal_timer;
 /** GATT server. */
 typedef struct pin_state
 {
@@ -32,6 +38,7 @@ typedef struct pin_state
  timer_t time_end;
  bool timer_state;
  bool rellay_state;
+ personal_timer timers;
 } pin_state;
 
 //------Microcontroler------
@@ -57,12 +64,13 @@ static pin_state pins[2] =
 {.pin=GPIO_NUM_26, .state=false}
 #endif
 };
+static time_t current_time = 0;
 int8_t check_recived_data(char*);
 bool get_state(pin_state*);
 void set_state(pin_state*,bool);
 int gatt_svr_init(void);
-void inti_time(time_t);
-static void periodic_timer_callback(void *arg);
+void inti_time(pin_state*);
+static void periodic_timer_run(void *arg);
 void adc_init();
 static adc_oneshot_unit_handle_t adc1_handle;
 static adc_cali_handle_t adc_calibration = NULL;
