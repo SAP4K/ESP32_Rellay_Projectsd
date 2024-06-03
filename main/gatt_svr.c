@@ -43,23 +43,6 @@ int8_t check_recived_data(char* data)
     uint8_t nr_relay=0;
     char comparare[7];
     memcpy(comparare,data,7);
-    if(strcmp("FxFFFF",data) == 0)
-    {
-        time_t time = 1715788863;
-        time += 10800;
-        static uint64_t pp = 0;
-        struct timeval tv_noww;
-        gettimeofday(&tv_noww,NULL);
-        ESP_LOGI(TAG,"%lld",tv_noww.tv_sec);
-        time += tv_noww.tv_sec;
-        ESP_LOGI(TAG,"%lld",time);
-        pp = tv_noww.tv_sec;
-        struct tm* timeinfo = localtime(&time);
-        ESP_LOGI("Personal","AnulB:%d LunaB:%d ziuaB:%d %d:%d:%d",timeinfo->tm_year, timeinfo->tm_mon, timeinfo->tm_mday, timeinfo->tm_hour,timeinfo->tm_min,timeinfo->tm_sec);
-        return 40;
-    }
-    else
-    {
     switch(data[0])
     {
         case '0':
@@ -97,6 +80,7 @@ int8_t check_recived_data(char* data)
         return -1;
     }
     memset(comparare,'\000',7);
+    ESP_LOGW(TAG,"ASA %s",comparare);
     memcpy(comparare,&data[2],3);
     comparare[3] = '\000';
     if(strcmp("000",comparare) != 0)
@@ -114,7 +98,6 @@ int8_t check_recived_data(char* data)
         return -1;
     }
     return nr_relay;
-    }
 }
 void set_state(pin_state* pin,bool state)
 {
@@ -314,6 +297,7 @@ static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,
                         ESP_LOGI(TAG, "ADC%d Channel[%d] Cali Voltage: %d mV", ADC_UNIT_1 + 1, ADC_CHANNEL_4, voltage);
                         float dates = ((float)voltage/1000)-0.565;
                         int sendd =  (int)round((dates*100)/0.959);
+                        static int old_send = 100;
                         ESP_LOGI(TAG,"%f",dates);
                         ESP_LOGI(TAG,"%d",sendd);
                         if(sendd > 100)
@@ -323,6 +307,16 @@ static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,
                         if(sendd<1)
                         {
                             sendd = 0;
+                        }
+                        if(old_send < sendd)
+                        {
+                            sendd = old_send;
+                            ESP_LOGW(TAG,"Se atribuie old: %d", sendd);
+                        }
+                        else
+                        {
+                            old_send = sendd;
+                            ESP_LOGW(TAG,"Se atribuie new: %d",sendd);
                         }
                         itoa(sendd,send,10);
                         ESP_LOGI(TAG,"dates: %f",dates);
@@ -362,7 +356,6 @@ unknown:
     assert(0);
     return BLE_ATT_ERR_UNLIKELY;
 }
-
 void gatt_svr_register_cb(struct ble_gatt_register_ctxt *ctxt, void *arg)
 {
     char buf[BLE_UUID_STR_LEN];
