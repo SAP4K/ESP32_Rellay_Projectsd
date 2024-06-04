@@ -80,7 +80,6 @@ int8_t check_recived_data(char* data)
         return -1;
     }
     memset(comparare,'\000',7);
-    ESP_LOGW(TAG,"ASA %s",comparare);
     memcpy(comparare,&data[2],3);
     comparare[3] = '\000';
     if(strcmp("000",comparare) != 0)
@@ -88,7 +87,7 @@ int8_t check_recived_data(char* data)
         ESP_LOGI(TAG,"Erorre de 0");
         return -1;
     }
-    nr_relay += data[strlen(data)-1] - 47;
+    nr_relay += data[5] - 47;
     if(nr_relay > 69)
     {
         return -1;
@@ -97,6 +96,7 @@ int8_t check_recived_data(char* data)
     {
         return -1;
     }
+    ESP_LOGI(TAG,"%d", nr_relay);
     return nr_relay;
 }
 void set_state(pin_state* pin,bool state)
@@ -126,57 +126,118 @@ bool get_state(pin_state* pin)
     {
         return false;
     }
-}
-static void periodic_timer_run(void *arg);
+};
 void inti_time(pin_state* pin)
 {
-    time_t interval;
-    struct tm* timeinfo = localtime(&current_time);
-    ESP_LOGI(TAG,"Ore: %d Minute: %d Sec: %d ",timeinfo->tm_hour,timeinfo->tm_min,timeinfo->tm_sec);
-    time_t current_time_in_seconds = timeinfo->tm_hour*60*60 + timeinfo->tm_min*60+ timeinfo->tm_sec;
-    pin->timers.time_begin = current_time_in_seconds + 60;
-    esp_timer_create_args_t timer_periodic = {
-        .callback = periodic_timer_run,
-        .name = "test",
-        .arg = pin,
+    struct tm* timeinfo = localtime(&pin->timers.time_begin_repeat);
+    time_t time_in_second_begin = pin->timers.time_begin_repeat - current_time;
+    time_t time_in_second_end = pin->timers.time_end_repeat - current_time;
+    ESP_LOGI(TAG,"Start: %lld", time_in_second_begin);
+    ESP_LOGI(TAG,"End: %lld", time_in_second_end);
+    ESP_LOGI(TAG," %d.%d.%d Ore: %d Minute: %d Sec: %d ",timeinfo->tm_year,timeinfo->tm_mon+1,timeinfo->tm_mday,timeinfo->tm_hour,timeinfo->tm_min,timeinfo->tm_sec);
+    esp_timer_create_args_t start_timer = 
+    {
+        .callback = timer_on_rellay,
+        .name = "Start",
+        .arg = pin
     };
-    if(pin->timers.time_begin > current_time_in_seconds)
+    esp_timer_create_args_t stop_timer = 
     {
-        ESP_LOGI(TAG,"Sunt aici");
-        interval = pin->timers.time_begin - current_time_in_seconds;
-    }
-    else
-    {
-        interval = current_time_in_seconds - pin->timers.time_begin;
-        ESP_LOGI(TAG,"Test %lld",interval);
-        interval = 86400 - interval;
-        ESP_LOGI(TAG,"A ramas %lld",interval);
-    }
-    ESP_LOGI(TAG,"Timul curent secunde: %lld",current_time_in_seconds);
-    ESP_LOGI(TAG,"Timpul setat: %lld",pin->timers.time_begin);
-    esp_timer_create(&timer_periodic,&pin->timers.timer_handler);
-    ESP_LOGI(TAG,"TIMPUL PENTRU SETARE %lld",interval*1000000);
-    esp_timer_start_periodic(pin->timers.timer_handler,interval*1000000);
+        .callback = timer_off_rellay,
+        .name = "Stop",
+        .arg = pin
+    };
+    esp_timer_create(&start_timer,&pin->timers.timer_handler_begin_repeat);
+    esp_timer_start_periodic(pin->timers.timer_handler_begin_repeat,time_in_second_begin*1000000);
+
+    esp_timer_create(&stop_timer,&pin->timers.timer_handler_end_repeat);
+    esp_timer_start_periodic(pin->timers.timer_handler_end_repeat,time_in_second_end*1000000);
 }
-static void periodic_timer_run(void *arg)
+static void timer_on_rellay(void *arg)
 {
-    time_t interval = 86400000000;
-    uint64_t current =  round(esp_timer_get_time()/1000000);
-    time_t rr = current_time + current;
-    struct tm* timeinfo = localtime(&rr);
-    ESP_LOGI(TAG,"Ore: %d Minute: %d Sec: %d ",timeinfo->tm_hour,timeinfo->tm_min,timeinfo->tm_sec);
     pin_state* pin = (pin_state*)arg;
-    esp_timer_stop(pin->timers.timer_handler);
-    set_state(pin,true);
-    esp_timer_create_args_t timer_periodic = {
-        .callback = periodic_timer_run,
-        .name = "test",
-        .arg = pin,
+    time_t interval = 86400000000*pin->timers.repeat;
+    esp_timer_stop(pin->timers.timer_handler_begin_repeat);
+    esp_timer_create_args_t start_timer = 
+    {
+        .name = "Start",
+        .callback = timer_on_rellay,
+        .arg = pin
     };
-    esp_timer_create(&timer_periodic,&pin->timers.timer_handler);
-    esp_timer_start_periodic(pin->timers.timer_handler,interval);
-    ESP_LOGI(TAG,"%lld",pin->timers.time_begin);
-    ESP_LOGI(TAG,"%lld",interval);
+    esp_timer_create(&start_timer,&pin->timers.timer_handler_begin_repeat);
+    esp_timer_start_periodic(pin->timers.timer_handler_begin_repeat,interval);
+    set_state(pin,true);
+    ESP_LOGW(TAG,"enable esire, timer %lld", interval);
+}
+static void timer_off_rellay(void* arg)
+{
+    pin_state* pin = (pin_state*)arg;
+    time_t interval = 86400000000*pin->timers.repeat;
+    esp_timer_stop(pin->timers.timer_handler_begin_repeat);
+    esp_timer_create_args_t start_timer = 
+    {
+        .name = "Stop",
+        .callback = timer_off_rellay,
+        .arg = pin
+    };
+    esp_timer_create(&start_timer,&pin->timers.timer_handler_end_repeat);
+    esp_timer_start_periodic(pin->timers.timer_handler_end_repeat,interval);
+    set_state(pin,false);
+    ESP_LOGW(TAG,"disable esire, timer %lld", interval);
+}
+void prase_data_form_time(pin_state* pin, char* data)
+{
+    uint32_t i=7;
+    uint32_t contur=0;
+    char time_char[100];
+    memset(time_char,'\000',100);
+    while(data[i] != ',')
+    {
+        time_char[contur] = data[i];
+        i++;
+        contur++;
+    }
+    i++;
+    contur = 0;
+    current_time = atoll(time_char)+10800;
+    ESP_LOGW(TAG,"Current Time: %lld",current_time);
+    memset(time_char,'\000',100);
+    while(data[i] != ',')
+    {
+        time_char[contur] = data[i];
+        i++;
+        contur++;
+    }
+    i++;
+    contur = 0;
+    pin->timers.time_begin_repeat = atoll(time_char)+10800;
+    ESP_LOGW(TAG,"Time inceput: %lld",pin->timers.time_begin_repeat);
+    memset(time_char,'\000',100);
+    while(data[i] != ',')
+    {
+        time_char[contur] = data[i];
+        i++;
+        contur++;
+    }
+    pin->timers.time_end_repeat = atoll(time_char)+10800;
+    ESP_LOGW(TAG,"Time sfarsit: %lld", pin->timers.time_end_repeat);
+    contur = 0;
+    i++;
+    memset(time_char,'\000',100);
+    while(data[i] != ',')
+    {
+        time_char[contur] = data[i];
+        i++;
+        contur++;
+    }
+    ESP_LOGW(TAG,"Interval: %s", time_char);
+    memset(time_char,'\000',100);
+    i++;
+    contur = 0;
+    time_char[contur] = data[i];
+    pin->timers.repeat = atoll(time_char);
+    ESP_LOGW(TAG,"Repeat: %d", pin->timers.repeat);
+    inti_time(pin);
 }
 
 static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,
@@ -198,8 +259,8 @@ static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,
 
     case BLE_GATT_ACCESS_OP_WRITE_CHR:
         {
-            char data[30];
-            memset(data,'\000',30);
+            char data[100];
+            memset(data,'\000',100);
             ble_hs_mbuf_to_flat(ctxt->om,data,ctxt->om->om_len,NULL);
             switch(check_recived_data(data))
             {
@@ -218,26 +279,22 @@ static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,
                 }break;
                 case 2:
                 {
-                    pins[0].rellay_state = true;
                     set_state(&pins[0],true);
                     ESP_LOGI(TAG,"Sunt aici Turn ON rellay 1");
                 }break;
                 case 3:
                 {
-                    pins[0].rellay_state = true;
                     set_state(&pins[0],false);
                     ESP_LOGI(TAG,"Turn OFF rellay 1");
                 }break;
                 case 4:
                 {
-                    pins[0].timer_state = true;
-                    pins[0].time_begin = 61825;
-                    pins[0].time_end   = 62000;
+                    prase_data_form_time(&pins[0], data);
                     ESP_LOGI(TAG,"Turn ON with timer rellay 1");
                 }break;
                 case 5:
                 {
-                    pins[0].timer_state = false;
+                    esp_timer_stop(pins[0].timers.timer_handler_end_repeat);
                     ESP_LOGI(TAG,"TURN OFF timer for rellay 1");
                 }break;
                 case 65:
@@ -267,14 +324,12 @@ static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,
                 }break;
                 case 68:
                 {
-                    pins[1].timer_state = true;
-                    pins[1].time_begin = 61725;
-                    pins[1].time_end   = 61925;
+                    prase_data_form_time(&pins[1], data);
                     ESP_LOGI(TAG,"Turn ON with timer rellay 2");
                 }break;
                 case 69:
                 {
-                    pins[1].timer_state = false;
+                    esp_timer_stop(pins[1].timers.timer_handler_end_repeat);
                     ESP_LOGI(TAG,"Turn OFF timer for rellay 2");
                 }break;
                 case 99:
@@ -409,15 +464,15 @@ int
 gatt_svr_init(void)
 {
     current_time = 1717346750+10800;
-    inti_time(&pins[0]);
-    esp_timer_handle_t handler;
-    esp_timer_create_args_t asp = 
-    {
-        .callback = timer,
-        .name = "abc"
-    };
-    esp_timer_create(&asp,&handler);
-    esp_timer_start_periodic(handler,30000000);
+    //  inti_time(&pins[0]);
+    // esp_timer_handle_t handler;
+    // esp_timer_create_args_t asp = 
+    // {
+    //     .callback = timer,
+    //     .name = "abc"
+    // };
+    // esp_timer_create(&asp,&handler);
+    // esp_timer_start_periodic(handler,30000000);
     adc_init();
     int rc;
     ble_svc_gap_init();

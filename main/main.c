@@ -165,7 +165,6 @@ static void init_pins()
     gpio_hold_en(pins[0].pin);
     gpio_hold_en(pins[1].pin);
 }
-static void periodic_timer_run(void *arg);
 void app_main(void)
 {
     int rc;

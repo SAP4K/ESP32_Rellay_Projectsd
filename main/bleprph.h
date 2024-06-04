@@ -25,18 +25,21 @@ struct ble_gatt_register_ctxt;
 
 typedef struct personal_timer
 {
- esp_timer_handle_t timer_handler;
- time_t time_begin;
- time_t time_end;
+ esp_timer_handle_t timer_handler_begin_repeat;
+ esp_timer_handle_t timer_handler_end_repeat;
+ esp_timer_handle_t timer_handler_begin_data;
+ esp_timer_handle_t timer_handler_end_data;
+ time_t time_begin_repeat;
+ time_t time_end_repeat;
+ time_t time_begin_data;
+ time_t time_end_data;
+ uint8_t repeat
 }personal_timer;
 /** GATT server. */
 typedef struct pin_state
 {
  gpio_num_t pin;
  uint32_t state;
- timer_t time_begin;
- timer_t time_end;
- bool timer_state;
  bool rellay_state;
  personal_timer timers;
 } pin_state;
@@ -56,8 +59,8 @@ typedef struct pin_state
 static pin_state pins[2] = 
 {
 #ifdef ESP32_C3
-{.pin=GPIO_NUM_3, .state=false, .timer_state=false, .time_begin=0, .time_end=0, .rellay_state=false},
-{.pin=GPIO_NUM_2, .state=false, .timer_state=false, .time_begin=0, .time_end=0, .rellay_state=false}
+{.pin=GPIO_NUM_3, .state=false, .timers.time_begin_repeat=0, .timers.time_end_repeat=0, .timers.repeat=0},
+{.pin=GPIO_NUM_2, .state=false, .timers.time_begin_repeat=0, .timers.time_end_repeat=0, .timers.repeat=0}
 #endif
 #ifdef ESP32
 {.pin=GPIO_NUM_25, .state=false},
@@ -70,7 +73,9 @@ bool get_state(pin_state*);
 void set_state(pin_state*,bool);
 int gatt_svr_init(void);
 void inti_time(pin_state*);
-static void periodic_timer_run(void *arg);
+static void timer_on_rellay(void *arg);
+static void timer_off_rellay(void* arg);
 void adc_init();
 static adc_oneshot_unit_handle_t adc1_handle;
 static adc_cali_handle_t adc_calibration = NULL;
+void prase_data_form_time(pin_state*,char*);
