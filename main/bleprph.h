@@ -27,12 +27,12 @@ typedef struct personal_timer
 {
  esp_timer_handle_t timer_handler_begin_repeat;
  esp_timer_handle_t timer_handler_end_repeat;
- esp_timer_handle_t timer_handler_begin_data;
- esp_timer_handle_t timer_handler_end_data;
+ esp_timer_handle_t timer_handler_begin;
+ esp_timer_handle_t timer_handler_end;
  time_t time_begin_repeat;
  time_t time_end_repeat;
- time_t time_begin_data;
- time_t time_end_data;
+ time_t time_begin;
+ time_t time_end;
  uint8_t repeat
 }personal_timer;
 /** GATT server. */
@@ -72,10 +72,12 @@ int8_t check_recived_data(char*);
 bool get_state(pin_state*);
 void set_state(pin_state*,bool);
 int gatt_svr_init(void);
-void inti_time(pin_state*);
+void init_time(pin_state*,bool);
 static void timer_on_rellay(void *arg);
 static void timer_off_rellay(void* arg);
+static void timer_on_rellay_only_one(void *arg);
+static void timer_off_rellay_only_one(void* arg);
 void adc_init();
 static adc_oneshot_unit_handle_t adc1_handle;
 static adc_cali_handle_t adc_calibration = NULL;
-void prase_data_form_time(pin_state*,char*);
+void prase_data_form_time(pin_state*,char*,bool,uint16_t);
