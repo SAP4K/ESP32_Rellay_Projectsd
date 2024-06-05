@@ -1,9 +1,4 @@
-/*
- * SPDX-FileCopyrightText: 2015-2023 Espressif Systems (Shanghai) CO LTD
- *
- * SPDX-License-Identifier: Apache-2.0
- */
-
+ 
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
@@ -16,14 +11,8 @@
 #include "services/ans/ble_svc_ans.h"
 #include <string.h>
 #define TAG "Personal"
-/*** Maximum number of characteristics with the notify flag ***/
-#define MAX_NOTIFY 5
 
-
-static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,
-                struct ble_gatt_access_ctxt *ctxt,
-                void *arg);
-
+static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,struct ble_gatt_access_ctxt *ctxt,void *arg);
 static const struct ble_gatt_svc_def gatt_svr_svcs[] = {
     {
         .type = BLE_GATT_SVC_TYPE_PRIMARY,
@@ -294,8 +283,7 @@ void prase_data_form_time(pin_state* pin, char* data,bool choose_time,uint16_t l
     inti_time(pin,choose_time);
 }
 
-static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,
-                struct ble_gatt_access_ctxt *ctxt, void *arg)
+static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,struct ble_gatt_access_ctxt *ctxt, void *arg)
 {
     int rc=0;
     static char send[30] = {0};
@@ -602,11 +590,9 @@ void timer()
 }
 void set_false()
 {
-    printf("Se seteaza false\n");
     testam_alata_denumire = false;
 }
-int
-gatt_svr_init(void)
+int gatt_svr_init(void)
 {
     current_time = 1717346750+10800;
     //  inti_time(&pins[0]);

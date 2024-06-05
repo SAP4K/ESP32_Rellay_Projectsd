@@ -12,6 +12,8 @@
     "ble_svc_gatt.h": "c",
     "nvs_flash.h": "c",
     "esp_timer.h": "c",
-    "adc_cali_scheme.h": "c"
+    "adc_cali_scheme.h": "c",
+    "ble_svc_ans.h": "c",
+    "ble_svc_gap.h": "c"
   }
 }
