@@ -5,7 +5,6 @@
  */
 
 #include "esp_log.h"
-#include "nvs_flash.h"
 #include <stdio.h>
 /* power management */
 #include "esp_pm.h"
@@ -109,11 +108,23 @@ static int bleprph_gap_event(struct ble_gap_event *event, void *arg)
         }
         return 0;
     case BLE_GAP_EVENT_DISCONNECT:
+        {
+        printf("Deconectare\n");
+        set_false();
+                    if(testam_alata_denumire)
+            {
+                ESP_LOGE("Personal","ESTE true in main");
+            }
+            else
+            {
+                ESP_LOGE("Personal","ESTE false in main");
+            }
         MODLOG_DFLT(INFO, "disconnect; reason=%d ", event->disconnect.reason);
         MODLOG_DFLT(INFO, "\n");
         /* Connection terminated; resume advertising. */
         bleprph_advertise();
         return 0;
+        }
         /* Return BLE_GAP_REPEAT_PAIRING_RETRY to indicate that the host should
          * continue with the pairing operation.
          */
@@ -128,10 +139,40 @@ static void bleprph_on_reset(int reason)
 static void bleprph_on_sync(void)
 {
     int rc;
-    ble_addr_t addr;
-    ble_hs_id_gen_rnd(0, &addr);
-    ble_hs_id_set_rnd(addr.val);
     assert(rc == 0);
+    ////////////////////////////////////////////////////////////////////
+    nvs_open("Storage_BLE",NVS_READWRITE,&memory_handler);
+    uint8_t ble_id[6] = {0};
+    esp_err_t respons = nvs_get_u8(memory_handler,"ID1",ble_id);
+    char id[3] = "ID";
+    switch(respons)
+    {
+        case ESP_OK:
+        {
+            printf("au fost citite datele\n");
+            for(int i=0;i<6;i++)
+            {
+                id[2] = (char)(i+49);
+                nvs_get_u8(memory_handler,id,&addr.val[i]);
+                printf("%02x:",addr.val[i]);
+            }
+            ble_hs_id_set_rnd(addr.val);
+        }break;
+        case ESP_ERR_NVS_NOT_FOUND:
+        {
+            printf("Nu sunt date\n");
+            ble_hs_id_gen_rnd(0,&addr);
+            ble_hs_id_set_rnd(addr.val);
+            for(uint8_t i=0;i<6;i++)
+            {
+                id[2] = (char)(i+49);
+                nvs_set_u8(memory_handler,id,addr.val[i]);
+                printf("%s: %02x\n",id,addr.val[i]);
+            }
+        }break;
+    }
+    nvs_close(memory_handler);
+    ////////////////////////////////////////////////////////////////////
     /* Figure out address to use while advertising (no privacy for now) */
     rc = ble_hs_id_infer_auto(0, &own_addr_type);
     if (rc != 0) {
@@ -172,8 +213,8 @@ void app_main(void)
     /* Initialize NVS — it is used to store PHY calibration data */
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
-        ESP_ERROR_CHECK(nvs_flash_erase());
-        ESP_LOGI("Personalizat","Curatire memorie");
+        //ESP_ERROR_CHECK(nvs_flash_erase());
+        ESP_LOGE("Personalizat","Curatire memorie");
         ret = nvs_flash_init();
     }
     ESP_ERROR_CHECK(ret);
@@ -192,6 +233,7 @@ void app_main(void)
     }
     /* Initialize the NimBLE host configuration. */
     ble_hs_cfg.reset_cb = bleprph_on_reset;
+    printf("inainte de \n");
     ble_hs_cfg.sync_cb = bleprph_on_sync;
  
     rc = gatt_svr_init();
@@ -201,5 +243,5 @@ void app_main(void)
     assert(rc == 0);
     /* XXX Need to have template for store */
     ble_store_config_init();
-     nimble_port_freertos_init(bleprph_host_task);
+    nimble_port_freertos_init(bleprph_host_task);
 }

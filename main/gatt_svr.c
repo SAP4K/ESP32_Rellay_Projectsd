@@ -14,6 +14,7 @@
 #include "bleprph.h"
 #include <math.h>
 #include "services/ans/ble_svc_ans.h"
+#include <string.h>
 #define TAG "Personal"
 /*** Maximum number of characteristics with the notify flag ***/
 #define MAX_NOTIFY 5
@@ -296,8 +297,8 @@ void prase_data_form_time(pin_state* pin, char* data,bool choose_time,uint16_t l
 static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,
                 struct ble_gatt_access_ctxt *ctxt, void *arg)
 {
-     int rc=0;
-    static char send[30];
+    int rc=0;
+    static char send[30] = {0};
     static uint8_t characters=0;
     switch (ctxt->op) {
     case BLE_GATT_ACCESS_OP_READ_CHR:
@@ -315,6 +316,15 @@ static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,
             char data[100];
             memset(data,'\000',100);
             ble_hs_mbuf_to_flat(ctxt->om,data,ctxt->om->om_len,NULL);
+            if(testam_alata_denumire)
+            {
+                ESP_LOGE(TAG,"ESTE true");
+            }
+            else
+            {
+                ESP_LOGE(TAG,"ESTE false");
+            }
+            if(testam_alata_denumire){
             switch(check_recived_data(data))
             {
                 case 1:
@@ -473,6 +483,61 @@ static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,
                     ESP_LOGI(TAG,"Error de aici");
                 }break;
             }    
+            }
+            else
+            {  
+               nvs_open("Storage_BLE",NVS_READWRITE,&memory_handler);
+               uint32_t id_user = 0;
+               uint32_t register_id_user = 0;
+               bool check_message = false;
+               esp_err_t check = nvs_get_u32(memory_handler,"ID_User",&id_user);
+                printf("%s\n",data);
+                char dates[50];
+                memset(dates,'\000',50);
+                strncpy(dates,data,6);
+                printf("Venit: %s\n",dates);
+                if(strcmp(dates,"UX0000") == 0)
+                {
+                    check_message = true;
+                    printf("Parse UX\n");
+                    memset(dates,'\000',50);
+                    strncpy(dates,data+7,ctxt->om->om_len-7);
+                    //strcpy(dates,"21453");
+                    printf("%s\n",dates);
+                    printf("ID user:\n");
+                    register_id_user = atol(dates);
+                    printf("%ld\n",register_id_user);
+                }
+               if(check == ESP_ERR_NVS_NOT_FOUND && check_message == true)
+               {
+                    nvs_set_u32(memory_handler,"ID_User",register_id_user);
+                    printf("Se inregistreaza user\n");
+                    strcpy(send,"YES");
+                    characters = 3;
+                    testam_alata_denumire = true;
+               }
+               if(check == ESP_OK)
+               {
+                    printf("Conectare user\n");
+                    if(register_id_user == id_user)
+                    {
+                        strcpy(send,"YES");
+                        characters = 3;
+                        printf("User indentificat\n");
+                        testam_alata_denumire = true;
+                    }
+                    else
+                    {
+                        printf("User eroare\n");
+                        strcpy(send,"NO");
+                        characters = 2;
+                        testam_alata_denumire = false;
+                    }
+                    if(id_user)
+                    printf("%ld\n",id_user);
+               }
+               nvs_close(memory_handler); 
+            }
             return rc;
         }
         break;
@@ -534,6 +599,11 @@ void timer()
     struct tm* timeinfo = localtime(&rr);
     ESP_LOGI(TAG,"Ore: %d Minute: %d Sec: %d ",timeinfo->tm_hour,timeinfo->tm_min,timeinfo->tm_sec);
     
+}
+void set_false()
+{
+    printf("Se seteaza false\n");
+    testam_alata_denumire = false;
 }
 int
 gatt_svr_init(void)

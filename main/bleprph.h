@@ -17,7 +17,10 @@
 #include "esp_adc/adc_oneshot.h"
 #include "esp_adc/adc_cali.h"
 #include "esp_adc/adc_cali_scheme.h"
-
+#include <inttypes.h>
+#include "esp_system.h"
+#include "nvs_flash.h"
+#include "nvs.h"
 #define ESP32_C3
 
 struct ble_hs_cfg;
@@ -81,3 +84,7 @@ void adc_init();
 static adc_oneshot_unit_handle_t adc1_handle;
 static adc_cali_handle_t adc_calibration = NULL;
 void prase_data_form_time(pin_state*,char*,bool,uint16_t);
+static nvs_handle_t memory_handler;
+static bool testam_alata_denumire = false;
+static ble_addr_t addr;
+void set_false();
