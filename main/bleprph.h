@@ -5,9 +5,7 @@
 #include "modlog/modlog.h"
 #include "esp_peripheral.h"
 #include "driver/gpio.h"
-#include "esp_sleep.h"
 #include "esp_sntp.h"
-#include "esp_timer.h"
 #include "soc/soc_caps.h"
 #include "esp_log.h"
 #include "esp_adc/adc_oneshot.h"
@@ -72,7 +70,5 @@ void adc_init();
 static adc_oneshot_unit_handle_t adc1_handle;
 static adc_cali_handle_t adc_calibration = NULL;
 void prase_data_form_time(pin_state*,char*,bool,uint16_t);
-static nvs_handle_t memory_handler;
-static bool testam_alata_denumire = false;
 static ble_addr_t addr;
 void set_false();

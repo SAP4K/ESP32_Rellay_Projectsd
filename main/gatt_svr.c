@@ -1,7 +1,4 @@
- 
-#include <assert.h>
-#include <stdio.h>
-#include <string.h>
+
 #include "host/ble_hs.h"
 #include "host/ble_uuid.h"
 #include "services/gap/ble_svc_gap.h"
@@ -9,9 +6,8 @@
 #include "bleprph.h"
 #include <math.h>
 #include "services/ans/ble_svc_ans.h"
-#include <string.h>
 #define TAG "Personal"
-
+bool testam_alata_denumire = false;
 static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,struct ble_gatt_access_ctxt *ctxt,void *arg);
 static const struct ble_gatt_svc_def gatt_svr_svcs[] = {
     {
@@ -474,11 +470,13 @@ static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,struct ble
             }
             else
             {  
-               nvs_open("Storage_BLE",NVS_READWRITE,&memory_handler);
-               uint32_t id_user = 0;
-               uint32_t register_id_user = 0;
-               bool check_message = false;
-               esp_err_t check = nvs_get_u32(memory_handler,"ID_User",&id_user);
+                extern nvs_handle_t memory_handler;
+                printf("\nAdress: %p\n",(void*)&memory_handler);
+                nvs_open("Storage_BLE",NVS_READWRITE,&memory_handler);
+                uint32_t id_user = 0;
+                uint32_t register_id_user = 0;
+                bool check_message = false;
+                esp_err_t check = nvs_get_u32(memory_handler,"ID_User",&id_user);
                 printf("%s\n",data);
                 char dates[50];
                 memset(dates,'\000',50);

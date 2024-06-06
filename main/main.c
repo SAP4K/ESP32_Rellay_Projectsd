@@ -16,14 +16,12 @@
 #include "host/ble_hs.h"
 #include <host/ble_gap.h>
 #include <host/ble_hs.h>
-#include "console/console.h"
 #include "services/gap/ble_svc_gap.h"
 #include "bleprph.h"
-#include <unistd.h>
-#include <driver/timer.h>
 static const char *tag = "NimBLE_BLE_PRPH";
 static int bleprph_gap_event(struct ble_gap_event *event, void *arg);
 static uint8_t own_addr_type;
+nvs_handle_t memory_handler;
 #define TIMER_WAKEUP_TIME_US    (2 * 5000 * 5000)
 void ble_store_config_init(void);
 
@@ -96,7 +94,9 @@ static int bleprph_gap_event(struct ble_gap_event *event, void *arg)
         return 0;
     case BLE_GAP_EVENT_DISCONNECT:
         {
+        extern bool testam_alata_denumire;
         printf("Deconectare\n");
+        printf("\nAdress: %p\n",(void*)&memory_handler);
         set_false();
                     if(testam_alata_denumire)
             {

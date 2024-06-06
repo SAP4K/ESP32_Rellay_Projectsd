@@ -14,6 +14,17 @@
     "esp_timer.h": "c",
     "adc_cali_scheme.h": "c",
     "ble_svc_ans.h": "c",
-    "ble_svc_gap.h": "c"
+    "ble_svc_gap.h": "c",
+    "unistd.h": "c",
+    "console.h": "c",
+    "bleprph.h": "c",
+    "timer.h": "c",
+    "ble_uuid.h": "c",
+    "stdbool.h": "c",
+    "nimble_port_freertos.h": "c",
+    "ble.h": "c",
+    "gpio.h": "c",
+    "esp_sleep.h": "c",
+    "adc_cali.h": "c"
   }
 }
