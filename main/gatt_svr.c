@@ -1,11 +1,8 @@
 
-#include "host/ble_hs.h"
-#include "host/ble_uuid.h"
-#include "services/gap/ble_svc_gap.h"
-#include "services/gatt/ble_svc_gatt.h"
+
 #include "bleprph.h"
-#include <math.h>
-#include "services/ans/ble_svc_ans.h"
+
+
 #define TAG "Personal"
 bool testam_alata_denumire = false;
 static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,struct ble_gatt_access_ctxt *ctxt,void *arg);
@@ -586,10 +583,7 @@ void timer()
     ESP_LOGI(TAG,"Ore: %d Minute: %d Sec: %d ",timeinfo->tm_hour,timeinfo->tm_min,timeinfo->tm_sec);
     
 }
-void set_false()
-{
-    testam_alata_denumire = false;
-}
+ 
 int gatt_svr_init(void)
 {
     current_time = 1717346750+10800;

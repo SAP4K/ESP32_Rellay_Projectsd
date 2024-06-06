@@ -4,19 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "esp_log.h"
-#include <stdio.h>
-/* power management */
-#include "esp_pm.h"
-#include "esp_sleep.h"
-#include "esp_timer.h"
-/* BLE */
-#include "nimble/nimble_port.h"
-#include "nimble/nimble_port_freertos.h"
-#include "host/ble_hs.h"
-#include <host/ble_gap.h>
-#include <host/ble_hs.h>
-#include "services/gap/ble_svc_gap.h"
+
 #include "bleprph.h"
 static const char *tag = "NimBLE_BLE_PRPH";
 static int bleprph_gap_event(struct ble_gap_event *event, void *arg);
@@ -97,7 +85,7 @@ static int bleprph_gap_event(struct ble_gap_event *event, void *arg)
         extern bool testam_alata_denumire;
         printf("Deconectare\n");
         printf("\nAdress: %p\n",(void*)&memory_handler);
-        set_false();
+        testam_alata_denumire = false;
                     if(testam_alata_denumire)
             {
                 ESP_LOGE("Personal","ESTE true in main");

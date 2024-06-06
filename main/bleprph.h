@@ -6,7 +6,6 @@
 #include "esp_peripheral.h"
 #include "driver/gpio.h"
 #include "esp_sntp.h"
-#include "soc/soc_caps.h"
 #include "esp_log.h"
 #include "esp_adc/adc_oneshot.h"
 #include "esp_adc/adc_cali.h"
@@ -15,6 +14,20 @@
 #include "esp_system.h"
 #include "nvs_flash.h"
 #include "nvs.h"
+/* power management */
+#include "esp_pm.h"
+/* BLE */
+#include "nimble/nimble_port.h"
+#include "nimble/nimble_port_freertos.h"
+#include "host/ble_hs.h"
+#include <host/ble_gap.h>
+#include <math.h>
+#include "services/ans/ble_svc_ans.h"
+#include "host/ble_hs.h"
+// #include "host/ble_uuid.h"
+#include "services/gap/ble_svc_gap.h"
+#include "services/gatt/ble_svc_gatt.h"
+
 #define ESP32_C3
 
 struct ble_hs_cfg;
@@ -71,4 +84,3 @@ static adc_oneshot_unit_handle_t adc1_handle;
 static adc_cali_handle_t adc_calibration = NULL;
 void prase_data_form_time(pin_state*,char*,bool,uint16_t);
 static ble_addr_t addr;
-void set_false();

@@ -25,6 +25,16 @@
     "ble.h": "c",
     "gpio.h": "c",
     "esp_sleep.h": "c",
-    "adc_cali.h": "c"
+    "adc_cali.h": "c",
+    "inttypes.h": "c",
+    "esp_peripheral.h": "c",
+    "esp_sntp.h": "c",
+    "esp_log.h": "c",
+    "adc_oneshot.h": "c",
+    "esp_system.h": "c",
+    "nvs.h": "c",
+    "esp_pm.h": "c",
+    "ble_gap.h": "c",
+    "ble_hs.h": "c"
   }
 }
