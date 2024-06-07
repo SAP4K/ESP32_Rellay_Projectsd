@@ -68,7 +68,7 @@ int8_t check_recived_data(char* data)
     }
     nr_relay += data[5] - 47;
     ESP_LOGE(TAG,"Data %d",nr_relay);
-    if(nr_relay > 69)
+    if(nr_relay > 71)
     {
         return -1;
     }
@@ -339,7 +339,9 @@ static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,struct ble
                 case 5:
                 {
                     esp_timer_stop(pins[0].timers.timer_handler_begin_repeat);
+                    esp_timer_delete(pins[0].timers.timer_handler_begin_repeat);
                     esp_timer_stop(pins[0].timers.timer_handler_end_repeat);
+                    esp_timer_delete(pins[0].timers.timer_handler_end_repeat);
                     ESP_LOGI(TAG,"TURN OFF repeat timer for rellay 1");
                 }break;
                 case 6:
@@ -380,13 +382,28 @@ static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,struct ble
                 }break;
                 case 68:
                 {
+                    printf("Sunt aici rellay 2 run timer\n");
                     prase_data_form_time(&pins[1], data,true,ctxt->om->om_len);
                     ESP_LOGI(TAG,"Turn ON with repeat timer rellay 2");
                 }break;
                 case 69:
                 {
-                    esp_timer_stop(pins[1].timers.timer_handler_begin_repeat);
-                    esp_timer_delete(pins[1].timers.timer_handler_begin_repeat);
+                    if(esp_timer_stop(pins[1].timers.timer_handler_begin_repeat) == ESP_ERR_INVALID_STATE )
+                    {
+                        printf("Deja oprit\n");
+                    }
+                    else
+                    {
+                        printf("Este run\n");
+                    }
+                    if(esp_timer_delete(pins[1].timers.timer_handler_begin_repeat) == ESP_ERR_INVALID_STATE)
+                    {
+                        printf("Este run sau sters\n");
+                    }
+                    else
+                    {
+                        printf("este pornit\n");
+                    }
                     esp_timer_stop(pins[1].timers.timer_handler_end_repeat);
                     esp_timer_delete(pins[1].timers.timer_handler_end_repeat);
                     ESP_LOGI(TAG,"Turn OFF repeat timer for rellay 2");
