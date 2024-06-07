@@ -1,8 +1,4 @@
-
-
 #include "bleprph.h"
-
-
 #define TAG "Personal"
 bool testam_alata_denumire = false;
 static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,struct ble_gatt_access_ctxt *ctxt,void *arg);
@@ -162,18 +158,21 @@ static void timer_on_rellay_only_one(void *arg)
     pin_state* pin = (pin_state*)arg;
     printf("Sa pornit releul\n");
     set_state(pin,true);
+    esp_timer_delete(pin->timers.timer_handler_begin);
 }
 static void timer_off_rellay_only_one(void *arg)
 {
     pin_state* pin = (pin_state*)arg;
     printf("Sa stins releul\n");
     set_state(pin,false);
+    esp_timer_delete(pin->timers.timer_handler_end);
 }
 static void timer_on_rellay(void *arg)
 {
     pin_state* pin = (pin_state*)arg;
     time_t interval = 86400000000*pin->timers.repeat;
     esp_timer_stop(pin->timers.timer_handler_begin_repeat);
+    esp_timer_delete(pin->timers.timer_handler_begin_repeat);
     esp_timer_create_args_t start_timer = 
     {
         .name = "Start",
@@ -190,6 +189,7 @@ static void timer_off_rellay(void* arg)
     pin_state* pin = (pin_state*)arg;
     time_t interval = 86400000000*pin->timers.repeat;
     esp_timer_stop(pin->timers.timer_handler_end_repeat);
+    esp_timer_delete(pin->timers.timer_handler_end_repeat);
     esp_timer_create_args_t start_timer = 
     {
         .name = "Stop",
@@ -345,11 +345,13 @@ static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,struct ble
                 case 6:
                 {
                     prase_data_form_time(&pins[0], data,false,ctxt->om->om_len);
+                    ESP_LOGI(TAG,"Turn ON with only one timer rellay 1");
                 }break;
                 case 7:
                 {
-                    esp_timer_stop(pins[0].timers.timer_handler_begin);
-                    esp_timer_stop(pins[0].timers.timer_handler_end);
+                    esp_timer_delete(pins[0].timers.timer_handler_begin);
+                    esp_timer_delete(pins[0].timers.timer_handler_end);
+                    ESP_LOGI(TAG,"Turn OFF with only one timer rellay 1"); 
                 }break;
                 case 65:
                 {
@@ -384,19 +386,21 @@ static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,struct ble
                 case 69:
                 {
                     esp_timer_stop(pins[1].timers.timer_handler_begin_repeat);
+                    esp_timer_delete(pins[1].timers.timer_handler_begin_repeat);
                     esp_timer_stop(pins[1].timers.timer_handler_end_repeat);
+                    esp_timer_delete(pins[1].timers.timer_handler_end_repeat);
                     ESP_LOGI(TAG,"Turn OFF repeat timer for rellay 2");
                 }break;
                 case 70: 
                 {
-                    prase_data_form_time(&pins[0], data,true,ctxt->om->om_len);
+                    prase_data_form_time(&pins[1], data,false,ctxt->om->om_len);
                     ESP_LOGI(TAG,"Turn ON with only one timer rellay 2");
                 }break;
                 case 71: 
                 {
-                    esp_timer_stop(pins[0].timers.timer_handler_begin);
-                    esp_timer_stop(pins[0].timers.timer_handler_end);  
-                    ESP_LOGI(TAG,"Turn OFF with timer rellay 2");               
+                    esp_timer_delete(pins[1].timers.timer_handler_begin);
+                    esp_timer_delete(pins[1].timers.timer_handler_end);
+                    ESP_LOGI(TAG,"Turn OFF with only one timer rellay 2");               
                 }break;
                 case 99:
                 {

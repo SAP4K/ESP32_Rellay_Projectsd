@@ -14,9 +14,11 @@
 #include "esp_system.h"
 #include "nvs_flash.h"
 #include "nvs.h"
-/* power management */
+
+
 #include "esp_pm.h"
-/* BLE */
+
+
 #include "nimble/nimble_port.h"
 #include "nimble/nimble_port_freertos.h"
 #include "host/ble_hs.h"
@@ -24,7 +26,7 @@
 #include <math.h>
 #include "services/ans/ble_svc_ans.h"
 #include "host/ble_hs.h"
-// #include "host/ble_uuid.h"
+
 #include "services/gap/ble_svc_gap.h"
 #include "services/gatt/ble_svc_gatt.h"
 
