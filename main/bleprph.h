@@ -1,5 +1,3 @@
-
- 
 #include <stdbool.h>
 #include "nimble/ble.h"
 #include "modlog/modlog.h"
@@ -14,11 +12,7 @@
 #include "esp_system.h"
 #include "nvs_flash.h"
 #include "nvs.h"
-
-
 #include "esp_pm.h"
-
-
 #include "nimble/nimble_port.h"
 #include "nimble/nimble_port_freertos.h"
 #include "host/ble_hs.h"
@@ -26,10 +20,8 @@
 #include <math.h>
 #include "services/ans/ble_svc_ans.h"
 #include "host/ble_hs.h"
-
 #include "services/gap/ble_svc_gap.h"
 #include "services/gatt/ble_svc_gatt.h"
-
 #define ESP32_C3
 
 struct ble_hs_cfg;
@@ -45,7 +37,9 @@ typedef struct personal_timer
  time_t time_end_repeat;
  time_t time_begin;
  time_t time_end;
- uint8_t repeat
+ uint8_t repeat;
+ bool status_repeat;
+ bool status_one[2];
 }personal_timer;
 
 typedef struct pin_state
@@ -63,8 +57,8 @@ typedef struct pin_state
 static pin_state pins[2] = 
 {
 #ifdef ESP32_C3
-{.pin=GPIO_NUM_3, .state=false, .timers.time_begin_repeat=0, .timers.time_end_repeat=0, .timers.repeat=0},
-{.pin=GPIO_NUM_2, .state=false, .timers.time_begin_repeat=0, .timers.time_end_repeat=0, .timers.repeat=0}
+{.pin=GPIO_NUM_3, .state=false, .timers.time_begin_repeat=0, .timers.time_end_repeat=0, .timers.repeat=0, .timers.status_repeat = true, .timers.status_one[0] = true, .timers.status_one[1] = true},
+{.pin=GPIO_NUM_2, .state=false, .timers.time_begin_repeat=0, .timers.time_end_repeat=0, .timers.repeat=0, .timers.status_repeat = true, .timers.status_one[0] = true, .timers.status_one[1] = true}
 #endif
 #ifdef ESP32
 {.pin=GPIO_NUM_25, .state=false},

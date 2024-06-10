@@ -136,26 +136,59 @@ void inti_time(pin_state* pin,bool choose_time)
     };
     if(choose_time)
     {
-        start_timer.callback = timer_on_rellay;
-        esp_timer_create(&start_timer,&pin->timers.timer_handler_begin_repeat);
-        esp_timer_start_periodic(pin->timers.timer_handler_begin_repeat,time_in_second_begin*1000000);
-        stop_timer.callback = timer_off_rellay;
-        esp_timer_create(&stop_timer,&pin->timers.timer_handler_end_repeat);
-        esp_timer_start_periodic(pin->timers.timer_handler_end_repeat,time_in_second_end*1000000);
+        if(pin->timers.status_repeat)
+        {
+            pin->timers.status_repeat = false;
+        }
+        else
+        {
+            printf("Repornire timer repetat\n");
+            esp_timer_stop(pin->timers.timer_handler_begin_repeat);
+            esp_timer_delete(pin->timers.timer_handler_begin_repeat);
+            esp_timer_stop(pin->timers.timer_handler_end_repeat);
+            esp_timer_delete(pin->timers.timer_handler_end_repeat);
+        }
+            start_timer.callback = timer_on_rellay;
+            esp_timer_create(&start_timer,&pin->timers.timer_handler_begin_repeat);
+            esp_timer_start_periodic(pin->timers.timer_handler_begin_repeat,time_in_second_begin*1000000);
+            stop_timer.callback = timer_off_rellay;
+            esp_timer_create(&stop_timer,&pin->timers.timer_handler_end_repeat);
+            esp_timer_start_periodic(pin->timers.timer_handler_end_repeat,time_in_second_end*1000000);
     }
     else
     {
-        start_timer.callback = timer_on_rellay_only_one;
-        esp_timer_create(&start_timer,&pin->timers.timer_handler_begin);
-        esp_timer_start_once(pin->timers.timer_handler_begin,time_in_second_begin*1000000);
-        stop_timer.callback = timer_off_rellay_only_one;
-        esp_timer_create(&stop_timer,&pin->timers.timer_handler_end);
-        esp_timer_start_once(pin->timers.timer_handler_end,time_in_second_end*1000000);
+            if(pin->timers.status_one[0])
+            {
+                pin->timers.status_one[0] = false;
+            }
+            else
+            {
+                printf("Repornire timer unu begin\n");
+                esp_timer_stop(pin->timers.timer_handler_begin);
+            }
+            if(pin->timers.status_one[1])
+            {
+                pin->timers.status_one[1] = false;
+            }
+            else
+            {
+                printf("Repornire timer unu end\n");
+                esp_timer_stop(pin->timers.timer_handler_end);
+            }
+            esp_timer_delete(pin->timers.timer_handler_begin);
+            esp_timer_delete(pin->timers.timer_handler_end);
+            start_timer.callback = timer_on_rellay_only_one;
+            esp_timer_create(&start_timer,&pin->timers.timer_handler_begin);
+            esp_timer_start_once(pin->timers.timer_handler_begin,time_in_second_begin*1000000);
+            stop_timer.callback = timer_off_rellay_only_one;
+            esp_timer_create(&stop_timer,&pin->timers.timer_handler_end);
+            esp_timer_start_once(pin->timers.timer_handler_end,time_in_second_end*1000000);
     }
 }
 static void timer_on_rellay_only_one(void *arg)
 {
     pin_state* pin = (pin_state*)arg;
+    pin->timers.status_one[0] = true;
     printf("Sa pornit releul\n");
     set_state(pin,true);
     esp_timer_delete(pin->timers.timer_handler_begin);
@@ -163,10 +196,12 @@ static void timer_on_rellay_only_one(void *arg)
 static void timer_off_rellay_only_one(void *arg)
 {
     pin_state* pin = (pin_state*)arg;
+    pin->timers.status_one[1] = true;
     printf("Sa stins releul\n");
     set_state(pin,false);
     esp_timer_delete(pin->timers.timer_handler_end);
 }
+//////////////////////////////////////////////////
 static void timer_on_rellay(void *arg)
 {
     pin_state* pin = (pin_state*)arg;
@@ -184,6 +219,7 @@ static void timer_on_rellay(void *arg)
     set_state(pin,true);
     ESP_LOGW(TAG,"enable esire, timer %lld", interval);
 }
+////////////////////////////////////////////////// 
 static void timer_off_rellay(void* arg)
 {
     pin_state* pin = (pin_state*)arg;
@@ -313,11 +349,13 @@ static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,struct ble
                     if(get_state(&pins[0]))
                     {
                         strcpy(send,"1_ON");
+                        printf("citire stare ON reallay 1\n");
                         characters = 5;
                     }
                     else
                     {
                         strcpy(send,"1_OFF");
+                        printf("citire stare OFF reallay 1\n");
                         characters = 6;
                     }
                 }break;
@@ -338,11 +376,19 @@ static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,struct ble
                 }break;
                 case 5:
                 {
-                    esp_timer_stop(pins[0].timers.timer_handler_begin_repeat);
-                    esp_timer_delete(pins[0].timers.timer_handler_begin_repeat);
-                    esp_timer_stop(pins[0].timers.timer_handler_end_repeat);
-                    esp_timer_delete(pins[0].timers.timer_handler_end_repeat);
-                    ESP_LOGI(TAG,"TURN OFF repeat timer for rellay 1");
+                    if(!pins[0].timers.status_repeat)
+                    {
+                        esp_timer_stop(pins[0].timers.timer_handler_begin_repeat);
+                        esp_timer_delete(pins[0].timers.timer_handler_begin_repeat);
+                        esp_timer_stop(pins[0].timers.timer_handler_end_repeat);
+                        esp_timer_delete(pins[0].timers.timer_handler_end_repeat);
+                        ESP_LOGI(TAG,"TURN OFF repeat timer for rellay 1");
+                        pins[0].timers.status_repeat = true;
+                    }
+                    else
+                    {
+                        ESP_LOGI(TAG,"NU este timer repeat");
+                    }
                 }break;
                 case 6:
                 {
@@ -351,20 +397,41 @@ static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,struct ble
                 }break;
                 case 7:
                 {
+                    if(!pins[0].timers.status_one[0])
+                    {
+                        ESP_LOGI(TAG,"Turn OFF begin");
+                        esp_timer_stop(pins[0].timers.timer_handler_begin);
+                        pins[0].timers.status_one[0] = true;
+                    } 
+                    else
+                    {
+                        ESP_LOGI(TAG,"NU este timer one begin\n");
+                    }
+                    if(!pins[0].timers.status_one[1])
+                    {
+                        ESP_LOGI(TAG,"Turn OFF end");
+                        esp_timer_stop(pins[0].timers.timer_handler_end);
+                        pins[0].timers.status_one[1] = true;
+                    }
+                    else
+                    {
+                        ESP_LOGI(TAG,"NU este timer one end\n");
+                    }
                     esp_timer_delete(pins[0].timers.timer_handler_begin);
                     esp_timer_delete(pins[0].timers.timer_handler_end);
-                    ESP_LOGI(TAG,"Turn OFF with only one timer rellay 1"); 
                 }break;
                 case 65:
                 {
                     if(get_state(&pins[1]))
                     {
                         strcpy(send,"2_ON");
+                        printf("citire stare ON reallay 2\n");
                         characters = 5;
                     }
                     else
                     {
-                        strcpy(send,"3_OFF");
+                        strcpy(send,"2_OFF");
+                        printf("citire stare OFF reallay 1\n");
                         characters = 6;
                     }
                 }break;
@@ -388,25 +455,19 @@ static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,struct ble
                 }break;
                 case 69:
                 {
-                    if(esp_timer_stop(pins[1].timers.timer_handler_begin_repeat) == ESP_ERR_INVALID_STATE )
+                    if(!pins[1].timers.status_repeat)
                     {
-                        printf("Deja oprit\n");
+                        esp_timer_stop(pins[1].timers.timer_handler_begin_repeat);
+                        esp_timer_delete(pins[1].timers.timer_handler_begin_repeat);
+                        esp_timer_stop(pins[1].timers.timer_handler_end_repeat);
+                        esp_timer_delete(pins[1].timers.timer_handler_end_repeat);
+                        ESP_LOGI(TAG,"Turn OFF repeat timer for rellay 2");
+                        pins[1].timers.status_repeat = true;
                     }
                     else
                     {
-                        printf("Este run\n");
+                        ESP_LOGI(TAG,"NU este timer repeat");
                     }
-                    if(esp_timer_delete(pins[1].timers.timer_handler_begin_repeat) == ESP_ERR_INVALID_STATE)
-                    {
-                        printf("Este run sau sters\n");
-                    }
-                    else
-                    {
-                        printf("este pornit\n");
-                    }
-                    esp_timer_stop(pins[1].timers.timer_handler_end_repeat);
-                    esp_timer_delete(pins[1].timers.timer_handler_end_repeat);
-                    ESP_LOGI(TAG,"Turn OFF repeat timer for rellay 2");
                 }break;
                 case 70: 
                 {
@@ -415,9 +476,28 @@ static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,struct ble
                 }break;
                 case 71: 
                 {
+                    if(!pins[1].timers.status_one[0])
+                    {
+                        ESP_LOGI(TAG,"Turn OFF begin");
+                        esp_timer_stop(pins[1].timers.timer_handler_begin);
+                        pins[1].timers.status_one[0] = true;
+                    } 
+                    else
+                    {
+                        ESP_LOGI(TAG,"NU este timer one begin\n");
+                    }
+                    if(!pins[1].timers.status_one[1])
+                    {
+                        ESP_LOGI(TAG,"Turn OFF end");
+                        esp_timer_stop(pins[1].timers.timer_handler_end);
+                        pins[1].timers.status_one[1] = true;
+                    }
+                    else
+                    {
+                        ESP_LOGI(TAG,"NU este timer one end\n");
+                    }
                     esp_timer_delete(pins[1].timers.timer_handler_begin);
                     esp_timer_delete(pins[1].timers.timer_handler_end);
-                    ESP_LOGI(TAG,"Turn OFF with only one timer rellay 2");               
                 }break;
                 case 99:
                 {
@@ -595,28 +675,8 @@ void adc_init()
     };
     ESP_ERROR_CHECK(adc_oneshot_config_channel(adc1_handle, ADC_CHANNEL_4, &config));
 }
-void timer()
-{
-    uint64_t current =  round(esp_timer_get_time()/1000000);
-    ESP_LOGI(TAG,"Timpul de la inceput: %lld",current);
-    time_t rr = current_time + current;
-    struct tm* timeinfo = localtime(&rr);
-    ESP_LOGI(TAG,"Ore: %d Minute: %d Sec: %d ",timeinfo->tm_hour,timeinfo->tm_min,timeinfo->tm_sec);
-    
-}
- 
 int gatt_svr_init(void)
 {
-    current_time = 1717346750+10800;
-    //  inti_time(&pins[0]);
-    // esp_timer_handle_t handler;
-    // esp_timer_create_args_t asp = 
-    // {
-    //     .callback = timer,
-    //     .name = "abc"
-    // };
-    // esp_timer_create(&asp,&handler);
-    // esp_timer_start_periodic(handler,30000000);
     adc_init();
     int rc;
     ble_svc_gap_init();

@@ -10,7 +10,6 @@ static const char *tag = "NimBLE_BLE_PRPH";
 static int bleprph_gap_event(struct ble_gap_event *event, void *arg);
 static uint8_t own_addr_type;
 nvs_handle_t memory_handler;
-#define TIMER_WAKEUP_TIME_US    (2 * 5000 * 5000)
 void ble_store_config_init(void);
 
 static void bleprph_advertise(void)
@@ -100,7 +99,6 @@ static int bleprph_gap_event(struct ble_gap_event *event, void *arg)
         bleprph_advertise();
         return 0;
         }
-        
         return BLE_GAP_REPEAT_PAIRING_RETRY;
     }
     return 0;
@@ -122,7 +120,7 @@ static void bleprph_on_sync(void)
     {
         case ESP_OK:
         {
-            printf("au fost citite datele\n");
+            printf("au fost citite din memorie cu succes\n");
             for(int i=0;i<6;i++)
             {
                 id[2] = (char)(i+49);
