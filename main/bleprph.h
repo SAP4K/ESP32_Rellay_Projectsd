@@ -22,6 +22,8 @@
 #include "host/ble_hs.h"
 #include "services/gap/ble_svc_gap.h"
 #include "services/gatt/ble_svc_gatt.h"
+#include "driver/gptimer.h"
+
 #define ESP32_C3
 
 struct ble_hs_cfg;
