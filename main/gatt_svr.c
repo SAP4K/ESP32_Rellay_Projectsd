@@ -127,12 +127,14 @@ void inti_time(pin_state* pin,bool choose_time)
     esp_timer_create_args_t start_timer = 
     {
         .name = "Start",
-        .arg = pin
+        .arg = pin,
+        .dispatch_method = ESP_TIMER_ISR
     };
     esp_timer_create_args_t stop_timer = 
     {
         .name = "Stop",
-        .arg = pin
+        .arg = pin,
+        .dispatch_method = ESP_TIMER_ISR
     };
     if(choose_time)
     {
@@ -189,7 +191,6 @@ static void timer_on_rellay_only_one(void *arg)
 {
     pin_state* pin = (pin_state*)arg;
     pin->timers.status_one[0] = true;
-    printf("Sa pornit releul\n");
     set_state(pin,true);
     esp_timer_delete(pin->timers.timer_handler_begin);
 }
@@ -197,7 +198,6 @@ static void timer_off_rellay_only_one(void *arg)
 {
     pin_state* pin = (pin_state*)arg;
     pin->timers.status_one[1] = true;
-    printf("Sa stins releul\n");
     set_state(pin,false);
     esp_timer_delete(pin->timers.timer_handler_end);
 }
@@ -212,12 +212,12 @@ static void timer_on_rellay(void *arg)
     {
         .name = "Start",
         .callback = timer_on_rellay,
-        .arg = pin
+        .arg = pin,
+        .dispatch_method = ESP_TIMER_ISR
     };
     esp_timer_create(&start_timer,&pin->timers.timer_handler_begin_repeat);
     esp_timer_start_periodic(pin->timers.timer_handler_begin_repeat,interval);
     set_state(pin,true);
-    ESP_LOGW(TAG,"enable esire, timer %lld", interval);
 }
 ////////////////////////////////////////////////// 
 static void timer_off_rellay(void* arg)
@@ -230,12 +230,12 @@ static void timer_off_rellay(void* arg)
     {
         .name = "Stop",
         .callback = timer_off_rellay,
-        .arg = pin
+        .arg = pin,
+        .dispatch_method = ESP_TIMER_ISR
     };
     esp_timer_create(&start_timer,&pin->timers.timer_handler_end_repeat);
     esp_timer_start_periodic(pin->timers.timer_handler_end_repeat,interval);
     set_state(pin,false);
-    ESP_LOGW(TAG,"disable esire, timer %lld", interval);
 }
 void prase_data_form_time(pin_state* pin, char* data,bool choose_time,uint16_t lenght)
 {
