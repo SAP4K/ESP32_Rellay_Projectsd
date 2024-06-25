@@ -95,6 +95,7 @@ void set_state(pin_state* pin,bool state)
         gpio_hold_en(pin->pin);
     }
 }
+volatile static uint64_t runn_time = 0;
 bool get_state(pin_state* pin)
 {
     if(pin->state)
@@ -150,12 +151,13 @@ void inti_time(pin_state* pin,bool choose_time)
             esp_timer_stop(pin->timers.timer_handler_end_repeat);
             esp_timer_delete(pin->timers.timer_handler_end_repeat);
         }
-            start_timer.callback = timer_on_rellay;
-            esp_timer_create(&start_timer,&pin->timers.timer_handler_begin_repeat);
-            esp_timer_start_periodic(pin->timers.timer_handler_begin_repeat,time_in_second_begin*1000000);
-            stop_timer.callback = timer_off_rellay;
-            esp_timer_create(&stop_timer,&pin->timers.timer_handler_end_repeat);
-            esp_timer_start_periodic(pin->timers.timer_handler_end_repeat,time_in_second_end*1000000);
+            // start_timer.callback = timer_on_rellay;
+            // esp_timer_create(&start_timer,&pin->timers.timer_handler_begin_repeat);
+            // esp_timer_start_periodic(pin->timers.timer_handler_begin_repeat,1000000);
+            // stop_timer.callback = timer_off_rellay;
+            // esp_timer_create(&stop_timer,&pin->timers.timer_handler_end_repeat);
+            // esp_timer_start_periodic(pin->timers.timer_handler_end_repeat,time_in_second_end*1000000);
+            runn_time = ((uint64_t)(esp_timer_get_time()/1000000));
     }
     else
     {
@@ -202,22 +204,36 @@ static void timer_off_rellay_only_one(void *arg)
     esp_timer_delete(pin->timers.timer_handler_end);
 }
 //////////////////////////////////////////////////
-static void timer_on_rellay(void *arg)
-{
-    pin_state* pin = (pin_state*)arg;
-    time_t interval = 86400000000*pin->timers.repeat;
-    esp_timer_stop(pin->timers.timer_handler_begin_repeat);
-    esp_timer_delete(pin->timers.timer_handler_begin_repeat);
-    esp_timer_create_args_t start_timer = 
+static IRAM_ATTR void timer_on_rellay()
+{   
+    if(!pins[0].timers.status_repeat)
     {
-        .name = "Start",
-        .callback = timer_on_rellay,
-        .arg = pin,
-        .dispatch_method = ESP_TIMER_ISR
-    };
-    esp_timer_create(&start_timer,&pin->timers.timer_handler_begin_repeat);
-    esp_timer_start_periodic(pin->timers.timer_handler_begin_repeat,interval);
-    set_state(pin,true);
+        uint64_t run_time2 = (((uint64_t)(esp_timer_get_time()/1000000)) - runn_time) + current_time;
+        ESP_DRAM_LOGI(TAG,"time: %lld",pins[0].timers.time_begin_repeat);
+        if(run_time2 > pins[0].timers.time_begin_repeat &&  run_time2 < pins[0].timers.time_end_repeat )
+        {
+            set_state(&pins[0],true);
+            ESP_DRAM_LOGI(TAG,"RUN");
+        }
+        ESP_DRAM_LOGI(TAG,"run_time: %lld", run_time2);
+        if(run_time2 > pins[0].timers.time_end_repeat)
+        {
+            set_state(&pins[0],false);
+            ESP_DRAM_LOGI(TAG,"STOP");
+        }
+    }
+    if(pins[1].timers.status_repeat)
+    {
+
+    }
+    if(pins[0].timers.status_one[0])
+    {
+
+    }
+    if(pins[1].timers.status_one[1])
+    {
+
+    }
 }
 ////////////////////////////////////////////////// 
 static void timer_off_rellay(void* arg)
@@ -677,6 +693,13 @@ void adc_init()
 }
 int gatt_svr_init(void)
 {
+    esp_timer_create_args_t start_timer = 
+    {
+        .name = "Start",
+        .callback = timer_on_rellay,
+    };
+    esp_timer_create(&start_timer,&pins[0].timers.timer_handler_begin_repeat);
+    esp_timer_start_periodic(pins[0].timers.timer_handler_begin_repeat,1000000); 
     adc_init();
     int rc;
     ble_svc_gap_init();

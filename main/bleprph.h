@@ -56,7 +56,7 @@ typedef struct pin_state
 #define GATT_SVR_SVC_ALERT_UUID 0x1811
  
 
-static pin_state pins[2] = 
+volatile static pin_state pins[2] = 
 {
 #ifdef ESP32_C3
 {.pin=GPIO_NUM_3, .state=false, .timers.time_begin_repeat=0, .timers.time_end_repeat=0, .timers.repeat=0, .timers.status_repeat = true, .timers.status_one[0] = true, .timers.status_one[1] = true},
@@ -67,13 +67,13 @@ static pin_state pins[2] =
 {.pin=GPIO_NUM_26, .state=false}
 #endif
 };
-static time_t current_time = 0;
+volatile static time_t current_time = 0;
 int8_t check_recived_data(char*);
 bool get_state(pin_state*);
 void set_state(pin_state*,bool);
 int gatt_svr_init(void);
 void init_time(pin_state*,bool);
-static void timer_on_rellay(void *arg);
+static void timer_on_rellay();
 static void timer_off_rellay(void* arg);
 static void timer_on_rellay_only_one(void *arg);
 static void timer_off_rellay_only_one(void* arg);
