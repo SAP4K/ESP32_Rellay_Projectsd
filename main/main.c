@@ -11,7 +11,6 @@ static int bleprph_gap_event(struct ble_gap_event *event, void *arg);
 static uint8_t own_addr_type;
 nvs_handle_t memory_handler;
 void ble_store_config_init(void);
-
 static void bleprph_advertise(void)
 {
     struct ble_gap_adv_params adv_params;
@@ -39,6 +38,7 @@ static void bleprph_advertise(void)
     };
     fields.num_uuids16 = 1;
     fields.uuids16_is_complete = 1;
+
     rc = ble_gap_adv_set_fields(&fields);
     if (rc != 0) {
         MODLOG_DFLT(ERROR, "error setting advertisement data; rc=%d\n", rc);
@@ -50,7 +50,7 @@ static void bleprph_advertise(void)
     adv_params.conn_mode = BLE_GAP_CONN_MODE_UND;
     adv_params.disc_mode = BLE_GAP_DISC_MODE_GEN;
     adv_params.itvl_min = BLE_GAP_ADV_ITVL_MS(500);
-    adv_params.itvl_max = BLE_GAP_ADV_ITVL_MS(4000);
+    adv_params.itvl_max = BLE_GAP_ADV_ITVL_MS(5000);
     rc = ble_gap_adv_start(own_addr_type, NULL, BLE_HS_FOREVER,
                            &adv_params, bleprph_gap_event, NULL);
     if (rc != 0) {
@@ -203,7 +203,7 @@ void app_main(void)
     ble_hs_cfg.sync_cb = bleprph_on_sync;
     rc = gatt_svr_init();
     assert(rc == 0);
-    rc = ble_svc_gap_device_name_set("EBS");
+    rc = ble_svc_gap_device_name_set("EBS2");
     assert(rc == 0);
     ble_store_config_init();
     nimble_port_freertos_init(bleprph_host_task);
