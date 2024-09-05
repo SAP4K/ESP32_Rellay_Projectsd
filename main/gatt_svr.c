@@ -109,85 +109,7 @@ bool get_state(pin_state* pin)
 };
 void inti_time(pin_state* pin,bool choose_time)
 {
-    struct tm* timeinfo = localtime(&pin->timers.time_begin_repeat);
-    time_t time_in_second_begin;
-    time_t time_in_second_end;
-    if(choose_time)
-    {
-        time_in_second_begin = pin->timers.time_begin_repeat - current_time;
-        time_in_second_end = pin->timers.time_end_repeat - current_time;
-    }
-    else
-    {
-        time_in_second_begin = pin->timers.time_begin - current_time;
-        time_in_second_end = pin->timers.time_end - current_time;
-    }
-    ESP_LOGI(TAG,"Start: %lld", time_in_second_begin);
-    ESP_LOGI(TAG,"End: %lld", time_in_second_end);
-    ESP_LOGI(TAG," %d.%d.%d Ore: %d Minute: %d Sec: %d ",timeinfo->tm_year,timeinfo->tm_mon+1,timeinfo->tm_mday,timeinfo->tm_hour,timeinfo->tm_min,timeinfo->tm_sec);
-    esp_timer_create_args_t start_timer = 
-    {
-        .name = "Start",
-        .arg = pin,
-        .dispatch_method = ESP_TIMER_ISR
-    };
-    esp_timer_create_args_t stop_timer = 
-    {
-        .name = "Stop",
-        .arg = pin,
-        .dispatch_method = ESP_TIMER_ISR
-    };
-    if(choose_time)
-    {
-        if(pin->timers.status_repeat)
-        {
-            pin->timers.status_repeat = false;
-        }
-        else
-        {
-            printf("Repornire timer repetat\n");
-            esp_timer_stop(pin->timers.timer_handler_begin_repeat);
-            esp_timer_delete(pin->timers.timer_handler_begin_repeat);
-            esp_timer_stop(pin->timers.timer_handler_end_repeat);
-            esp_timer_delete(pin->timers.timer_handler_end_repeat);
-        }
-            // start_timer.callback = timer_on_rellay;
-            // esp_timer_create(&start_timer,&pin->timers.timer_handler_begin_repeat);
-            // esp_timer_start_periodic(pin->timers.timer_handler_begin_repeat,1000000);
-            // stop_timer.callback = timer_off_rellay;
-            // esp_timer_create(&stop_timer,&pin->timers.timer_handler_end_repeat);
-            // esp_timer_start_periodic(pin->timers.timer_handler_end_repeat,time_in_second_end*1000000);
-            runn_time = ((uint64_t)(esp_timer_get_time()/1000000));
-    }
-    else
-    {
-            if(pin->timers.status_one[0])
-            {
-                pin->timers.status_one[0] = false;
-            }
-            else
-            {
-                printf("Repornire timer unu begin\n");
-                esp_timer_stop(pin->timers.timer_handler_begin);
-            }
-            if(pin->timers.status_one[1])
-            {
-                pin->timers.status_one[1] = false;
-            }
-            else
-            {
-                printf("Repornire timer unu end\n");
-                esp_timer_stop(pin->timers.timer_handler_end);
-            }
-            esp_timer_delete(pin->timers.timer_handler_begin);
-            esp_timer_delete(pin->timers.timer_handler_end);
-            start_timer.callback = timer_on_rellay_only_one;
-            esp_timer_create(&start_timer,&pin->timers.timer_handler_begin);
-            esp_timer_start_once(pin->timers.timer_handler_begin,time_in_second_begin*1000000);
-            stop_timer.callback = timer_off_rellay_only_one;
-            esp_timer_create(&stop_timer,&pin->timers.timer_handler_end);
-            esp_timer_start_once(pin->timers.timer_handler_end,time_in_second_end*1000000);
-    }
+   
 }
 static void timer_on_rellay_only_one(void *arg)
 {
@@ -387,11 +309,14 @@ static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,struct ble
                 }break;
                 case 4:
                 {
-                    prase_data_form_time(&pins[0], data,true,ctxt->om->om_len);
+                   // prase_data_form_time(&pins[0], data,true,ctxt->om->om_len);
+                    /*Timer pentru releul unu cu repetare*/
                     ESP_LOGI(TAG,"Turn ON with repeat timer rellay 1");
                 }break;
                 case 5:
                 {
+                    /*Oprire timer pentru primul releu cu repetare*/
+                    ESP_LOGI(TAG,"TURN OFF repeat timer for rellay 1");
                     if(!pins[0].timers.status_repeat)
                     {
                         esp_timer_stop(pins[0].timers.timer_handler_begin_repeat);
@@ -408,11 +333,13 @@ static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,struct ble
                 }break;
                 case 6:
                 {
-                    prase_data_form_time(&pins[0], data,false,ctxt->om->om_len);
+                    /*Pornire timer pentru primul releu fara repetare*/
+                    //prase_data_form_time(&pins[0], data,false,ctxt->om->om_len);
                     ESP_LOGI(TAG,"Turn ON with only one timer rellay 1");
                 }break;
                 case 7:
                 {
+                    /*Oprire timer pentru primul releu fara repetare*/
                     if(!pins[0].timers.status_one[0])
                     {
                         ESP_LOGI(TAG,"Turn OFF begin");
@@ -465,12 +392,14 @@ static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,struct ble
                 }break;
                 case 68:
                 {
+                    /*Timer pentru releul doi cu repetare*/
                     printf("Sunt aici rellay 2 run timer\n");
                     prase_data_form_time(&pins[1], data,true,ctxt->om->om_len);
                     ESP_LOGI(TAG,"Turn ON with repeat timer rellay 2");
                 }break;
                 case 69:
                 {
+                     /*Oprire timer pentru al doilea releu cu repetare*/
                     if(!pins[1].timers.status_repeat)
                     {
                         esp_timer_stop(pins[1].timers.timer_handler_begin_repeat);
@@ -487,11 +416,13 @@ static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,struct ble
                 }break;
                 case 70: 
                 {
+                    /*Pornire timer pentru al doilea releu fara repetare*/
                     prase_data_form_time(&pins[1], data,false,ctxt->om->om_len);
                     ESP_LOGI(TAG,"Turn ON with only one timer rellay 2");
                 }break;
                 case 71: 
                 {
+                    /*Oprire timer pentru al doilea releu fara repetare*/
                     if(!pins[1].timers.status_one[0])
                     {
                         ESP_LOGI(TAG,"Turn OFF begin");
@@ -693,13 +624,7 @@ void adc_init()
 }
 int gatt_svr_init(void)
 {
-    esp_timer_create_args_t start_timer = 
-    {
-        .name = "Start",
-        .callback = timer_on_rellay,
-    };
-    esp_timer_create(&start_timer,&pins[0].timers.timer_handler_begin_repeat);
-    esp_timer_start_periodic(pins[0].timers.timer_handler_begin_repeat,1000000); 
+    test();
     adc_init();
     int rc;
     ble_svc_gap_init();

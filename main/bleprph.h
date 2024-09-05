@@ -1,29 +1,17 @@
-#include <stdbool.h>
-#include "nimble/ble.h"
-#include "modlog/modlog.h"
 #include "esp_peripheral.h"
 #include "driver/gpio.h"
-#include "esp_sntp.h"
-#include "esp_log.h"
 #include "esp_adc/adc_oneshot.h"
-#include "esp_adc/adc_cali.h"
-#include "esp_adc/adc_cali_scheme.h"
-#include <inttypes.h>
-#include "esp_system.h"
 #include "nvs_flash.h"
 #include "nvs.h"
 #include "esp_pm.h"
 #include "nimble/nimble_port.h"
 #include "nimble/nimble_port_freertos.h"
 #include "host/ble_hs.h"
-#include <host/ble_gap.h>
 #include <math.h>
 #include "services/ans/ble_svc_ans.h"
-#include "host/ble_hs.h"
 #include "services/gap/ble_svc_gap.h"
 #include "services/gatt/ble_svc_gatt.h"
-#include "driver/gptimer.h"
-
+#include "config_time.h"
 #define ESP32_C3
 
 struct ble_hs_cfg;
