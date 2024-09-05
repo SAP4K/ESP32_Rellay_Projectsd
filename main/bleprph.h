@@ -1,8 +1,6 @@
 #include "esp_peripheral.h"
 #include "driver/gpio.h"
 #include "esp_adc/adc_oneshot.h"
-#include "nvs_flash.h"
-#include "nvs.h"
 #include "esp_pm.h"
 #include "nimble/nimble_port.h"
 #include "nimble/nimble_port_freertos.h"
@@ -12,6 +10,7 @@
 #include "services/gap/ble_svc_gap.h"
 #include "services/gatt/ble_svc_gatt.h"
 #include "config_time.h"
+#include "nvs_memory.h"
 #define ESP32_C3
 
 struct ble_hs_cfg;

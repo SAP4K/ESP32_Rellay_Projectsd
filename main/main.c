@@ -112,39 +112,19 @@ static void bleprph_on_sync(void)
     int rc;
     assert(rc == 0);
     ////////////////////////////////////////////////////////////////////
-    nvs_open("Storage_BLE",NVS_READWRITE,&memory_handler);
-    uint8_t ble_id[6] = {0};
-    esp_err_t respons = nvs_get_u8(memory_handler,"ID1",ble_id);
-    char id[3] = "ID";
-    switch(respons)
+    esp_err_t respons = nvs_check_mac_address();
+    if(respons != ESP_OK)
     {
-        case ESP_OK:
-        {
-            printf("au fost citite din memorie cu succes\n");
-            for(int i=0;i<6;i++)
-            {
-                id[2] = (char)(i+49);
-                nvs_get_u8(memory_handler,id,&addr.val[i]);
-                printf("%02x:",addr.val[i]);
-            }
-            ble_hs_id_set_rnd(addr.val);
-        }break;
-        case ESP_ERR_NVS_NOT_FOUND:
-        {
-            printf("Nu sunt date\n");
-            ble_hs_id_gen_rnd(0,&addr);
-            ble_hs_id_set_rnd(addr.val);
-            for(uint8_t i=0;i<6;i++)
-            {
-                id[2] = (char)(i+49);
-                nvs_set_u8(memory_handler,id,addr.val[i]);
-                printf("%s: %02x\n",id,addr.val[i]);
-            }
-        }break;
+        ble_hs_id_gen_rnd(0,&addr);
+        nvs_write_mac_address(&addr.val);
     }
-    nvs_close(memory_handler);
+    else
+    {
+        nvs_read_mac_address(&addr.val);
+    }
     ////////////////////////////////////////////////////////////////////
     /* Figure out address to use while advertising (no privacy for now) */
+    ble_hs_id_set_rnd(addr.val);
     rc = ble_hs_id_infer_auto(0, &own_addr_type);
     if (rc != 0) {
         MODLOG_DFLT(ERROR, "error determining address type; rc=%d\n", rc);
