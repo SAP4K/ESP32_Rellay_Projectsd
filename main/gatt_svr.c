@@ -381,7 +381,7 @@ static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,struct ble
             {  
                 extern nvs_handle_t memory_handler;
                 printf("\nAdress: %p\n",(void*)&memory_handler);
-                nvs_open(SPACE_NAME,NVS_READWRITE,&memory_handler);
+                nvs_open(BLE_ADDRESS,NVS_READWRITE,&memory_handler);
                 uint32_t id_user = 0;
                 uint32_t register_id_user = 0;
                 bool check_message = false;

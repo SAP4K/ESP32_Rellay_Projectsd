@@ -111,18 +111,18 @@ static void bleprph_on_sync(void)
 {
     int rc;
     assert(rc == 0);
-    ////////////////////////////////////////////////////////////////////
     esp_err_t respons = nvs_check_mac_address();
     if(respons != ESP_OK)
     {
+        ESP_LOGE("BLE","Nu este adresa");
         ble_hs_id_gen_rnd(0,&addr);
         nvs_write_mac_address(&addr.val);
     }
     else
     {
+        ESP_LOGE("BLE","Este adresa");
         nvs_read_mac_address(&addr.val);
     }
-    ////////////////////////////////////////////////////////////////////
     /* Figure out address to use while advertising (no privacy for now) */
     ble_hs_id_set_rnd(addr.val);
     rc = ble_hs_id_infer_auto(0, &own_addr_type);
