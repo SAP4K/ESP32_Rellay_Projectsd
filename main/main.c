@@ -86,7 +86,6 @@ static int bleprph_gap_event(struct ble_gap_event *event, void *arg)
         testam_alata_denumire = false;
         MODLOG_DFLT(INFO, "disconnect; reason=%d ", event->disconnect.reason);
         MODLOG_DFLT(INFO, "\n");
-        
         bleprph_advertise();
         return 0;
         }

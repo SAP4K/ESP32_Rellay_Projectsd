@@ -95,7 +95,6 @@ void set_state(pin_state* pin,bool state)
         gpio_hold_en(pin->pin);
     }
 }
-volatile static uint64_t runn_time = 0;
 bool get_state(pin_state* pin)
 {
     if(pin->state)
@@ -357,13 +356,12 @@ static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,struct ble
                     if(rc != ESP_OK)
                     {
                         rc = nvs_set_user_id(&user);
-                        if(rc == ESP_OK)
-                        {
-                            testam_alata_denumire = true;
-                            memset(send,'\000',sizeof(send));
-                            strcpy(send,"YES");
-                            characters = strlen(send);
-                        }
+                        if(rc != ESP_OK)
+                            return rc;
+                        testam_alata_denumire = true;
+                        memset(send,'\000',sizeof(send));
+                        strcpy(send,"YES");
+                        characters = strlen(send);
                     }
                     else
                     {
