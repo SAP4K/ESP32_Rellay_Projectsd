@@ -1,6 +1,6 @@
 #include "esp_peripheral.h"
 #include "driver/gpio.h"
-#include "esp_adc/adc_oneshot.h"
+#include "adc.h"
 #include "esp_pm.h"
 #include "nimble/nimble_port.h"
 #include "nimble/nimble_port_freertos.h"
@@ -64,8 +64,5 @@ static void timer_on_rellay();
 static void timer_off_rellay(void* arg);
 static void timer_on_rellay_only_one(void *arg);
 static void timer_off_rellay_only_one(void* arg);
-void adc_init();
-static adc_oneshot_unit_handle_t adc1_handle;
-static adc_cali_handle_t adc_calibration = NULL;
 void prase_data_form_time(pin_state*,char*,bool,uint16_t);
 static ble_addr_t addr;

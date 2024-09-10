@@ -11,6 +11,7 @@ static int bleprph_gap_event(struct ble_gap_event *event, void *arg);
 static uint8_t own_addr_type;
 nvs_handle_t memory_handler;
 void ble_store_config_init(void);
+static uint8_t test2[3] = {123,255,97};
 static void bleprph_advertise(void)
 {
     struct ble_gap_adv_params adv_params;
@@ -32,13 +33,13 @@ static void bleprph_advertise(void)
     fields.name = (uint8_t *)name;
     fields.name_len = strlen(name);
     fields.name_is_complete = 1;
-
+    fields.svc_data_uuid16 = test2;
+    fields.svc_data_uuid16_len = (uint8_t)sizeof(test2);
     fields.uuids16 = (ble_uuid16_t[]) {
         BLE_UUID16_INIT(GATT_SVR_SVC_ALERT_UUID)
     };
     fields.num_uuids16 = 1;
     fields.uuids16_is_complete = 1;
-    
     rc = ble_gap_adv_set_fields(&fields);
     if (rc != 0) {
         MODLOG_DFLT(ERROR, "error setting advertisement data; rc=%d\n", rc);
