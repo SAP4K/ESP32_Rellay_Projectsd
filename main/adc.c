@@ -1,5 +1,7 @@
 #include "adc.h"
 #include "math.h"
+static adc_oneshot_unit_handle_t adc1_handle;
+static adc_cali_handle_t adc_calibration = NULL;
 void adc_init()
 {
     adc_oneshot_unit_init_cfg_t init_config1 = {
@@ -27,34 +29,20 @@ int adc_get_battery()
      adc_cali_create_scheme_curve_fitting(&cali_conf,&adc_calibration);
      adc_cali_raw_to_voltage(adc_calibration,adc_raw,&voltage);
      #endif
-     ESP_LOGI("ADC", "ADC%d Channel[%d] Raw Data: %d", ADC_UNIT_1 + 1, ADC_CHANNEL_4, adc_raw);
      #if ADC_CALI_SCHEME_CURVE_FITTING_SUPPORTED
-     ESP_LOGI("ADC", "ADC%d Channel[%d] Cali Voltage: %d mV", ADC_UNIT_1 + 1, ADC_CHANNEL_4, voltage);
      float dates = ((float)voltage/1000)-0.565;
      int sendd =  (int)round((dates*100)/0.959);
-     static int old_send = 100;
-     ESP_LOGI("ADC","%f",dates);
-     ESP_LOGI("ADC","%d",sendd);
+     int old_send = 100;
      if(sendd > 100)
-     {
           sendd = 100;
-     }
+
      if(sendd<1)
-     {
           sendd = 0;
-     }
+
      if(old_send < sendd)
-     {
           sendd = old_send;
-          ESP_LOGW("ADC","Se atribuie old: %d", sendd);
-     }
      else
-     {
           old_send = sendd;
-          ESP_LOGW("ADC","Se atribuie new: %d",sendd);
-     }
-     ESP_LOGI("ADC","dates: %f",dates);
-     ESP_LOGI("ADC","procentaj: %d",sendd);
      adc_cali_delete_scheme_curve_fitting(adc_calibration);
      #endif
      return sendd;

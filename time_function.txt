@@ -1,0 +1,74 @@
+void prase_data_form_time(pin_state* pin, char* data,bool choose_time,uint16_t lenght)
+{
+    printf("%s\n",data);
+    uint32_t i=7;
+    uint32_t contur=0;
+    char time_char[100];
+    memset(time_char,'\000',100);
+    time_t *begin_timer_from_pin;
+    time_t *end_timer_from_pin;
+    if(choose_time)
+    {
+        printf("Este true \n");
+        begin_timer_from_pin = &pin->timers.time_begin_repeat;
+        end_timer_from_pin = &pin->timers.time_end_repeat;
+    }
+    else
+    {
+        printf("Este false \n");
+        begin_timer_from_pin = &pin->timers.time_begin;
+        end_timer_from_pin = &pin->timers.time_end;
+    }
+    while(data[i] != ',')
+    {
+        time_char[contur] = data[i];
+        i++;
+        contur++;
+    }
+    i++;
+    contur = 0;
+    current_time = atoll(time_char)+10800;
+    ESP_LOGW(TAG,"Current Time: %lld",current_time);
+    memset(time_char,'\000',100);
+    while(data[i] != ',')
+    {
+        time_char[contur] = data[i];
+        i++;
+        contur++;
+    }
+    i++;
+    contur = 0;
+    *begin_timer_from_pin = atoll(time_char)+10800;
+    ESP_LOGW(TAG,"Time inceput: %lld",*begin_timer_from_pin);
+    memset(time_char,'\000',100);
+    if(choose_time)
+    {
+        while(data[i] != ',')
+        {
+            time_char[contur] = data[i];
+            i++;
+            contur++;
+        }
+    }
+    else
+    {
+        while(i<lenght)
+        {
+            time_char[contur] = data[i];
+            i++;
+            contur++;
+        }
+    }
+    *end_timer_from_pin = atoll(time_char)+10800;
+    ESP_LOGW(TAG,"Time sfarsit: %lld", *end_timer_from_pin);
+
+    if(choose_time){
+    memset(time_char,'\000',100);
+        i++;
+        contur = 0;
+        time_char[contur] = data[i];
+        pin->timers.repeat = atoll(time_char);
+        ESP_LOGW(TAG,"Repeat: %d", pin->timers.repeat);
+    }
+    //inti_time(pin,choose_time);
+}

@@ -3,6 +3,8 @@
 #include "nvs.h"
 #define BLE_ADDRESS "Storage_BLE"
 #define ID_USER "ID_User"
+#define USER "USER"
+#define CHECK_USER "ID1"
 esp_err_t nvs_check_mac_address();
 esp_err_t nvs_write_mac_address(uint8_t*);
 esp_err_t nvs_read_mac_address(uint8_t*);

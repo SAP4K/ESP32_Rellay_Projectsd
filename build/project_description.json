@@ -1,7 +1,7 @@
 {
     "version":            "1",
     "project_name":       "power_save",
-    "project_version":    "9c15bef-dirty",
+    "project_version":    "ad7b306-dirty",
     "project_path":       "C:/ESP_Projects/pp/power_save",
     "idf_path":           "C:/Espressif/frameworks/esp-idf-v5.1.3",
     "build_dir":          "C:/ESP_Projects/pp/power_save/build",
@@ -790,7 +790,7 @@
             "managed_reqs": [],
             "managed_priv_reqs": [],
             "file": "C:/ESP_Projects/pp/power_save/build/esp-idf/main/libmain.a",
-            "sources": [ "C:/ESP_Projects/pp/power_save/main/adc.c", "C:/ESP_Projects/pp/power_save/main/nvs_memory.c", "C:/ESP_Projects/pp/power_save/main/config_time.c", "C:/ESP_Projects/pp/power_save/main/main.c", "C:/ESP_Projects/pp/power_save/main/gatt_svr.c" ],
+            "sources": [ "C:/ESP_Projects/pp/power_save/main/pins.c", "C:/ESP_Projects/pp/power_save/main/adc.c", "C:/ESP_Projects/pp/power_save/main/nvs_memory.c", "C:/ESP_Projects/pp/power_save/main/config_time.c", "C:/ESP_Projects/pp/power_save/main/main.c", "C:/ESP_Projects/pp/power_save/main/gatt_svr.c" ],
             "include_dirs": [ "." ]
         },
         "mbedtls": {

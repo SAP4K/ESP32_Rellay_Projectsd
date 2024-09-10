@@ -78,112 +78,7 @@ int8_t check_recived_data(char* data)
     }
     return nr_relay;
 }
-void set_state(pin_state* pin,bool state)
-{
-    if(state)
-    {
-        gpio_hold_dis(pin->pin);
-        gpio_set_level(pin->pin,1);
-        pin->state = true;
-        gpio_hold_en(pin->pin);
-    }
-    else
-    {
-        gpio_hold_dis(pin->pin);
-        gpio_set_level(pin->pin,0);
-        pin->state = false;
-        gpio_hold_en(pin->pin);
-    }
-}
-bool get_state(pin_state* pin)
-{
-    if(pin->state)
-    {
-        return true;
-    }
-    else
-    {
-        return false;
-    }
-};
-//////////////////////////////////////////////////
-
-////////////////////////////////////////////////// 
-void prase_data_form_time(pin_state* pin, char* data,bool choose_time,uint16_t lenght)
-{
-    printf("%s\n",data);
-    uint32_t i=7;
-    uint32_t contur=0;
-    char time_char[100];
-    memset(time_char,'\000',100);
-    time_t *begin_timer_from_pin;
-    time_t *end_timer_from_pin;
-    if(choose_time)
-    {
-        printf("Este true \n");
-        begin_timer_from_pin = &pin->timers.time_begin_repeat;
-        end_timer_from_pin = &pin->timers.time_end_repeat;
-    }
-    else
-    {
-        printf("Este false \n");
-        begin_timer_from_pin = &pin->timers.time_begin;
-        end_timer_from_pin = &pin->timers.time_end;
-    }
-    while(data[i] != ',')
-    {
-        time_char[contur] = data[i];
-        i++;
-        contur++;
-    }
-    i++;
-    contur = 0;
-    current_time = atoll(time_char)+10800;
-    ESP_LOGW(TAG,"Current Time: %lld",current_time);
-    memset(time_char,'\000',100);
-    while(data[i] != ',')
-    {
-        time_char[contur] = data[i];
-        i++;
-        contur++;
-    }
-    i++;
-    contur = 0;
-    *begin_timer_from_pin = atoll(time_char)+10800;
-    ESP_LOGW(TAG,"Time inceput: %lld",*begin_timer_from_pin);
-    memset(time_char,'\000',100);
-    if(choose_time)
-    {
-        while(data[i] != ',')
-        {
-            time_char[contur] = data[i];
-            i++;
-            contur++;
-        }
-    }
-    else
-    {
-        while(i<lenght)
-        {
-            time_char[contur] = data[i];
-            i++;
-            contur++;
-        }
-    }
-    *end_timer_from_pin = atoll(time_char)+10800;
-    ESP_LOGW(TAG,"Time sfarsit: %lld", *end_timer_from_pin);
-
-    if(choose_time){
-    memset(time_char,'\000',100);
-        i++;
-        contur = 0;
-        time_char[contur] = data[i];
-        pin->timers.repeat = atoll(time_char);
-        ESP_LOGW(TAG,"Repeat: %d", pin->timers.repeat);
-    }
-    //inti_time(pin,choose_time);
-}
-
+ 
 static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,struct ble_gatt_access_ctxt *ctxt, void *arg)
 {
     int rc=0;
@@ -218,7 +113,7 @@ static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,struct ble
             {
                 case 1:
                 {
-                    if(get_state(&pins[0]))
+                    if(pin_get_state(&pins[0]))
                     {
                         strcpy(send,"1_ON");
                         printf("citire stare ON reallay 1\n");
@@ -233,17 +128,17 @@ static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,struct ble
                 }break;
                 case 2:
                 {
-                    set_state(&pins[0],true);
+                    pin_set_state(&pins[0],true);
                     ESP_LOGI(TAG,"Sunt aici Turn ON rellay 1");
                 }break;
                 case 3:
                 {
-                    set_state(&pins[0],false);
+                    pin_set_state(&pins[0],false);
                     ESP_LOGI(TAG,"Turn OFF rellay 1");
                 }break;
                 case 4:
                 {
-                    prase_data_form_time(&pins[0], data,true,ctxt->om->om_len);
+                    //prase_data_form_time(&pins[0], data,true,ctxt->om->om_len);
                     /*Timer pentru releul unu cu repetare*/
                     ESP_LOGI(TAG,"Turn ON with repeat timer rellay 1");
                 }break;
@@ -255,7 +150,7 @@ static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,struct ble
                 case 6:
                 {
                     /*Pornire timer pentru primul releu fara repetare*/
-                    prase_data_form_time(&pins[0], data,false,ctxt->om->om_len);
+                  //  prase_data_form_time(&pins[0], data,false,ctxt->om->om_len);
                     ESP_LOGI(TAG,"Turn ON with only one timer rellay 1");
                 }break;
                 case 7:
@@ -264,7 +159,7 @@ static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,struct ble
                 }break;
                 case 65:
                 {
-                    if(get_state(&pins[1]))
+                    if(pin_get_state(&pins[1]))
                     {
                         strcpy(send,"2_ON");
                         printf("citire stare ON reallay 2\n");
@@ -280,20 +175,20 @@ static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,struct ble
                 case 66:
                 {
                     pins[1].rellay_state = true;
-                    set_state(&pins[1],true);
+                    pin_set_state(&pins[1],true);
                     ESP_LOGI(TAG,"Turn ON rellay 2");     
                 }break;
                 case 67:
                 {
                     pins[1].rellay_state = true;
-                    set_state(&pins[1],false);
+                    pin_set_state(&pins[1],false);
                     ESP_LOGI(TAG,"Turn OFF rellay 2");
                 }break;
                 case 68:
                 {
                     /*Timer pentru releul doi cu repetare*/
                     printf("Sunt aici rellay 2 run timer\n");
-                    prase_data_form_time(&pins[1], data,true,ctxt->om->om_len);
+                    //prase_data_form_time(&pins[1], data,true,ctxt->om->om_len);
                     ESP_LOGI(TAG,"Turn ON with repeat timer rellay 2");
                 }break;
                 case 69:
@@ -303,7 +198,7 @@ static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,struct ble
                 case 70: 
                 {
                     /*Pornire timer pentru al doilea releu fara repetare*/
-                    prase_data_form_time(&pins[1], data,false,ctxt->om->om_len);
+                    //prase_data_form_time(&pins[1], data,false,ctxt->om->om_len);
                     ESP_LOGI(TAG,"Turn ON with only one timer rellay 2");
                 }break;
                 case 71: 

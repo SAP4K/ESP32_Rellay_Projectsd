@@ -11,7 +11,7 @@ static int bleprph_gap_event(struct ble_gap_event *event, void *arg);
 static uint8_t own_addr_type;
 nvs_handle_t memory_handler;
 void ble_store_config_init(void);
-static uint8_t test2[3] = {123,255,97};
+static uint8_t test2[6] = {123,255,97,255,255,99};
 static void bleprph_advertise(void)
 {
     struct ble_gap_adv_params adv_params;
@@ -45,8 +45,6 @@ static void bleprph_advertise(void)
         MODLOG_DFLT(ERROR, "error setting advertisement data; rc=%d\n", rc);
         return;
     }
-
-    
     memset(&adv_params, 0, sizeof adv_params);
     adv_params.conn_mode = BLE_GAP_CONN_MODE_UND;
     adv_params.disc_mode = BLE_GAP_DISC_MODE_GEN;
@@ -137,19 +135,10 @@ void bleprph_host_task(void *param)
 
     nimble_port_freertos_deinit();
 }
-static void init_pins()
-{
-    gpio_set_direction(pins[0].pin,GPIO_MODE_OUTPUT);
-    gpio_set_direction(pins[1].pin,GPIO_MODE_OUTPUT);
-    gpio_set_level(pins[0].pin,0);
-    gpio_set_level(pins[1].pin,0);
-    gpio_hold_en(pins[0].pin);
-    gpio_hold_en(pins[1].pin);
-}
 void app_main(void)
 {
     int rc;
-    init_pins();
+    pin_init_pins();
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
         ESP_LOGE("Personalizat","Curatire memorie");
