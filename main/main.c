@@ -38,7 +38,7 @@ static void bleprph_advertise(void)
     };
     fields.num_uuids16 = 1;
     fields.uuids16_is_complete = 1;
-
+    
     rc = ble_gap_adv_set_fields(&fields);
     if (rc != 0) {
         MODLOG_DFLT(ERROR, "error setting advertisement data; rc=%d\n", rc);
@@ -64,8 +64,6 @@ static int bleprph_gap_event(struct ble_gap_event *event, void *arg)
     int rc;
     switch (event->type) {
     case BLE_GAP_EVENT_CONNECT:
-        
-
         MODLOG_DFLT(INFO, "connection %s; status=%d ",
                     event->connect.status == 0 ? "established" : "failed",
                     event->connect.status);
@@ -85,14 +83,6 @@ static int bleprph_gap_event(struct ble_gap_event *event, void *arg)
         printf("Deconectare\n");
         printf("\nAdress: %p\n",(void*)&memory_handler);
         testam_alata_denumire = false;
-                    if(testam_alata_denumire)
-            {
-                ESP_LOGE("Personal","ESTE true in main");
-            }
-            else
-            {
-                ESP_LOGE("Personal","ESTE false in main");
-            }
         MODLOG_DFLT(INFO, "disconnect; reason=%d ", event->disconnect.reason);
         MODLOG_DFLT(INFO, "\n");
         

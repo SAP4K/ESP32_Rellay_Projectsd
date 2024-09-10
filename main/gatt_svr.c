@@ -379,59 +379,45 @@ static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,struct ble
             }
             else
             {  
-                extern nvs_handle_t memory_handler;
-                printf("\nAdress: %p\n",(void*)&memory_handler);
-                nvs_open(BLE_ADDRESS,NVS_READWRITE,&memory_handler);
-                uint32_t id_user = 0;
-                uint32_t register_id_user = 0;
                 bool check_message = false;
-                esp_err_t check = nvs_get_u32(memory_handler,"ID_User",&id_user);
-                printf("%s\n",data);
                 char dates[50];
-                memset(dates,'\000',50);
+                memset(dates,'\000',sizeof(dates));
                 strncpy(dates,data,6);
-                printf("Venit: %s\n",dates);
                 if(strcmp(dates,"UX0000") == 0)
-                {
                     check_message = true;
-                    printf("Parse UX\n");
-                    memset(dates,'\000',50);
-                    strncpy(dates,data+7,ctxt->om->om_len-7);
-                    //strcpy(dates,"21453");
-                    printf("%s\n",dates);
-                    printf("ID user:\n");
-                    register_id_user = atol(dates);
-                    printf("%ld\n",register_id_user);
-                }
-               if(check == ESP_ERR_NVS_NOT_FOUND && check_message == true)
-               {
-                    nvs_set_u32(memory_handler,"ID_User",register_id_user);
-                    printf("Se inregistreaza user\n");
-                    strcpy(send,"YES");
-                    characters = 3;
-                    testam_alata_denumire = true;
-               }
-               if(check == ESP_OK)
-               {
-                    printf("Conectare user\n");
-                    if(register_id_user == id_user)
+
+                if(check_message)
+                {
+                    rc = nvs_get_user_id(NULL);
+                    uint32_t user = (uint32_t)atoi(&data[7]);
+                    if(rc != ESP_OK)
                     {
-                        strcpy(send,"YES");
-                        characters = 3;
-                        printf("User indentificat\n");
-                        testam_alata_denumire = true;
+                        rc = nvs_set_user_id(&user);
+                        if(rc == ESP_OK)
+                        {
+                            testam_alata_denumire = true;
+                            memset(send,'\000',sizeof(send));
+                            strcpy(send,"YES");
+                            characters = strlen(send);
+                        }
                     }
                     else
                     {
-                        printf("User eroare\n");
-                        strcpy(send,"NO");
-                        characters = 2;
-                        testam_alata_denumire = false;
+                        uint32_t user_id;
+                        nvs_get_user_id(&user_id);
+                        memset(send,'\000',sizeof(send));
+                        if(user_id == user)
+                        {
+                            testam_alata_denumire = true;
+                            strcpy(send,"YES");
+                        }
+                        else
+                        {
+                            strcpy(send,"NO");
+                        }
+                        characters = strlen(send);
                     }
-                    if(id_user)
-                    printf("%ld\n",id_user);
-               }
-               nvs_close(memory_handler); 
+                }
             }
             return rc;
         }

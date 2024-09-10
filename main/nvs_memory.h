@@ -6,4 +6,5 @@
 esp_err_t nvs_check_mac_address();
 esp_err_t nvs_write_mac_address(uint8_t*);
 esp_err_t nvs_read_mac_address(uint8_t*);
-esp_err_t nvs_check_user();
+esp_err_t nvs_get_user_id(uint32_t*);
+esp_err_t nvs_set_user_id(uint32_t*);

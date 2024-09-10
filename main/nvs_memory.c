@@ -60,7 +60,7 @@ esp_err_t nvs_read_mac_address(uint8_t* address)
 
      return ESP_OK;
 }
-esp_err_t nvs_check_user()
+esp_err_t nvs_get_user_id(uint32_t* get_user_id)
 {
      int rc;
      nvs_handle_t handler;
@@ -72,12 +72,34 @@ esp_err_t nvs_check_user()
      strcpy(user_id,"USER");
      uint32_t user;
      rc = nvs_get_u32(handler,user_id,&user);
+     if(get_user_id != NULL)
+     {
+          *get_user_id = user;
+          ESP_LOGE("NVS","Diferit de zero");
+     }
+     else
+     {
+          ESP_LOGE("NVS","EGAL CU ZERO");
+     }
      if(rc != ESP_OK)
           return rc;
      return ESP_OK;
 }
-esp_err_t nvs_set_user_id()
+esp_err_t nvs_set_user_id(uint32_t* user_id)
 {
-
+     int rc;
+     nvs_handle_t handler;
+     rc = nvs_set_handler(&handler,ID_USER);
+     if(rc != ESP_OK)
+          return rc;
+     char user_id_key[5];
+     memset(user_id_key,'\000',sizeof(user_id_key));
+     strcpy(user_id_key,"USER");
+     uint32_t user;
+     ESP_LOGE("NVS","Set user with ID: %ld",*user_id);
+     rc = nvs_set_u32(handler,user_id_key,*user_id);
+     if(rc != ESP_OK)
+          return rc;
+     ESP_LOGE("NVS","A fost setat userul");
      return ESP_OK;
 }
