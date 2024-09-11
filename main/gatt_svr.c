@@ -126,6 +126,115 @@ esp_err_t define_user(uint8_t* characters,char* send,char* data)
     }
     return ESP_OK;
 }
+void order_processing(char* data,uint8_t* characters,char* send)
+{
+    switch(check_recived_data(data))
+    {
+        case 1:
+        {
+            if(pin_get_state(&pins[0]))
+            {
+                strcpy(send,"1_ON");
+                printf("citire stare ON reallay 1\n");
+                *characters = 5;
+            }
+            else
+            {
+                strcpy(send,"1_OFF");
+                printf("citire stare OFF reallay 1\n");
+                *characters = 6;
+            }
+        }break;
+        case 2:
+        {
+            pin_set_state(&pins[0],true);
+            ESP_LOGI(TAG,"Sunt aici Turn ON rellay 1");
+        }break;
+        case 3:
+        {
+            pin_set_state(&pins[0],false);
+            ESP_LOGI(TAG,"Turn OFF rellay 1");
+        }break;
+        case 4:
+        {
+            //prase_data_form_time(&pins[0], data,true,ctxt->om->om_len);
+            /*Timer pentru releul unu cu repetare*/
+            ESP_LOGI(TAG,"Turn ON with repeat timer rellay 1");
+        }break;
+        case 5:
+        {
+            /*Oprire timer pentru primul releu cu repetare*/
+            ESP_LOGI(TAG,"TURN OFF repeat timer for rellay 1");
+        }break;
+        case 6:
+        {
+            /*Pornire timer pentru primul releu fara repetare*/
+            //  prase_data_form_time(&pins[0], data,false,ctxt->om->om_len);
+            ESP_LOGI(TAG,"Turn ON with only one timer rellay 1");
+        }break;
+        case 7:
+        {
+            /*Oprire timer pentru primul releu fara repetare*/
+        }break;
+        case 65:
+        {
+            if(pin_get_state(&pins[1]))
+            {
+                strcpy(send,"2_ON");
+                printf("citire stare ON reallay 2\n");
+                *characters = 5;
+            }
+            else
+            {
+                strcpy(send,"2_OFF");
+                printf("citire stare OFF reallay 1\n");
+                *characters = 6;
+            }
+        }break;
+        case 66:
+        {
+            pins[1].rellay_state = true;
+            pin_set_state(&pins[1],true);
+            ESP_LOGI(TAG,"Turn ON rellay 2");     
+        }break;
+        case 67:
+        {
+            pins[1].rellay_state = true;
+            pin_set_state(&pins[1],false);
+            ESP_LOGI(TAG,"Turn OFF rellay 2");
+        }break;
+        case 68:
+        {
+            /*Timer pentru releul doi cu repetare*/
+            printf("Sunt aici rellay 2 run timer\n");
+            //prase_data_form_time(&pins[1], data,true,ctxt->om->om_len);
+            ESP_LOGI(TAG,"Turn ON with repeat timer rellay 2");
+        }break;
+        case 69:
+        {
+                     /*Oprire timer pentru al doilea releu cu repetare*/
+        }break;
+        case 70: 
+        {
+            /*Pornire timer pentru al doilea releu fara repetare*/
+            //prase_data_form_time(&pins[1], data,false,ctxt->om->om_len);
+            ESP_LOGI(TAG,"Turn ON with only one timer rellay 2");
+        }break;
+        case 71: 
+        {
+        }break;
+        case 99:
+        {
+            adc_get_battery(&characters,send);
+            ESP_LOGI("ADC","In string: %s",send);
+            ESP_LOGI("ADC","Nr caractere: %d", *characters);
+        }break;
+        default:
+        {
+            ESP_LOGI(TAG,"Error de aici");
+        }break;
+    }  
+}
 static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,struct ble_gatt_access_ctxt *ctxt, void *arg)
 {
     int rc=0;
@@ -155,118 +264,12 @@ static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,struct ble
             {
                 ESP_LOGE(TAG,"ESTE false");
             }
-            if(testam_alata_denumire){
-            switch(check_recived_data(data))
-            {
-                case 1:
-                {
-                    if(pin_get_state(&pins[0]))
-                    {
-                        strcpy(send,"1_ON");
-                        printf("citire stare ON reallay 1\n");
-                        characters = 5;
-                    }
-                    else
-                    {
-                        strcpy(send,"1_OFF");
-                        printf("citire stare OFF reallay 1\n");
-                        characters = 6;
-                    }
-                }break;
-                case 2:
-                {
-                    pin_set_state(&pins[0],true);
-                    ESP_LOGI(TAG,"Sunt aici Turn ON rellay 1");
-                }break;
-                case 3:
-                {
-                    pin_set_state(&pins[0],false);
-                    ESP_LOGI(TAG,"Turn OFF rellay 1");
-                }break;
-                case 4:
-                {
-                    //prase_data_form_time(&pins[0], data,true,ctxt->om->om_len);
-                    /*Timer pentru releul unu cu repetare*/
-                    ESP_LOGI(TAG,"Turn ON with repeat timer rellay 1");
-                }break;
-                case 5:
-                {
-                    /*Oprire timer pentru primul releu cu repetare*/
-                    ESP_LOGI(TAG,"TURN OFF repeat timer for rellay 1");
-                }break;
-                case 6:
-                {
-                    /*Pornire timer pentru primul releu fara repetare*/
-                  //  prase_data_form_time(&pins[0], data,false,ctxt->om->om_len);
-                    ESP_LOGI(TAG,"Turn ON with only one timer rellay 1");
-                }break;
-                case 7:
-                {
-                    /*Oprire timer pentru primul releu fara repetare*/
-                }break;
-                case 65:
-                {
-                    if(pin_get_state(&pins[1]))
-                    {
-                        strcpy(send,"2_ON");
-                        printf("citire stare ON reallay 2\n");
-                        characters = 5;
-                    }
-                    else
-                    {
-                        strcpy(send,"2_OFF");
-                        printf("citire stare OFF reallay 1\n");
-                        characters = 6;
-                    }
-                }break;
-                case 66:
-                {
-                    pins[1].rellay_state = true;
-                    pin_set_state(&pins[1],true);
-                    ESP_LOGI(TAG,"Turn ON rellay 2");     
-                }break;
-                case 67:
-                {
-                    pins[1].rellay_state = true;
-                    pin_set_state(&pins[1],false);
-                    ESP_LOGI(TAG,"Turn OFF rellay 2");
-                }break;
-                case 68:
-                {
-                    /*Timer pentru releul doi cu repetare*/
-                    printf("Sunt aici rellay 2 run timer\n");
-                    //prase_data_form_time(&pins[1], data,true,ctxt->om->om_len);
-                    ESP_LOGI(TAG,"Turn ON with repeat timer rellay 2");
-                }break;
-                case 69:
-                {
-                     /*Oprire timer pentru al doilea releu cu repetare*/
-                }break;
-                case 70: 
-                {
-                    /*Pornire timer pentru al doilea releu fara repetare*/
-                    //prase_data_form_time(&pins[1], data,false,ctxt->om->om_len);
-                    ESP_LOGI(TAG,"Turn ON with only one timer rellay 2");
-                }break;
-                case 71: 
-                {
-                }break;
-                case 99:
-                {
-                    adc_get_battery(&characters,send);
-                    ESP_LOGI("ADC","In string: %s",send);
-                    ESP_LOGI("ADC","Nr caractere: %d",characters);
-                }break;
-                default:
-                {
-                    ESP_LOGI(TAG,"Error de aici");
-                }break;
-            }    
-            }
+            if(testam_alata_denumire)
+                order_processing(data,&characters,send);
+
             else
-            {  
                 define_user(&characters,send,data);
-            }
+
             return rc;
         }
         break;
