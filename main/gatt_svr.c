@@ -78,7 +78,54 @@ int8_t check_recived_data(char* data)
     }
     return nr_relay;
 }
- 
+esp_err_t define_user(uint8_t* characters,char* send,char* data)
+{
+    bool check_message = false;
+    char dates[50];
+    int rc;
+    memset(dates,'\000',sizeof(dates));
+    strncpy(dates,data,6);
+    if(strcmp(dates,"UX0000") != 0)
+    {
+        strcpy(send,"COMAND_ERROR");
+        *characters = (uint8_t)strlen(send);
+    }
+    else
+        check_message = true;
+    
+    if(check_message)
+    {
+        rc = nvs_get_user_id(NULL);
+        uint32_t user = (uint32_t)atoi(&data[7]);
+        if(rc != ESP_OK)
+        {
+            rc = nvs_set_user_id(&user);
+            if(rc != ESP_OK)
+                return rc;
+                        
+            testam_alata_denumire = true;
+            strcpy(send,"YES");
+            *characters = strlen(send);
+        }
+        else
+        {
+            uint32_t user_id;
+            nvs_get_user_id(&user_id);
+            if(user_id == user)
+            {
+                testam_alata_denumire = true;
+                strcpy(send,"YES");
+            }
+            else
+            {
+                ESP_LOGE("LOGARE","Nu este user");
+                strcpy(send,"NO");
+            }
+            *characters = strlen(send);
+        }
+    }
+    return ESP_OK;
+}
 static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,struct ble_gatt_access_ctxt *ctxt, void *arg)
 {
     int rc=0;
@@ -206,22 +253,9 @@ static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,struct ble
                 }break;
                 case 99:
                 {
-                        int battery_level = adc_get_battery();
-                        itoa(battery_level,send,10);
-                        if(battery_level>=100)
-                        {
-                            characters = 3;
-                        }
-                        if(battery_level>=10 && battery_level<100)
-                        {
-                            characters = 2;
-                        }
-                        if(battery_level<10)
-                        {
-                          characters = 1;  
-                        }
-                        ESP_LOGI("ADC","In string: %s",send);
-                        ESP_LOGI("ADC","Nr caractere: %d",characters);
+                    adc_get_battery(&characters,send);
+                    ESP_LOGI("ADC","In string: %s",send);
+                    ESP_LOGI("ADC","Nr caractere: %d",characters);
                 }break;
                 default:
                 {
@@ -231,51 +265,7 @@ static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,struct ble
             }
             else
             {  
-                bool check_message = false;
-                char dates[50];
-                memset(dates,'\000',sizeof(dates));
-                strncpy(dates,data,6);
-                if(strcmp(dates,"UX0000") != 0)
-                {
-                    memset(send,'\000',sizeof(send));
-                    strcpy(send,"COMAND_ERROR");
-                    characters = (uint8_t)strlen(send);
-                }
-                else
-                    check_message = true;
-
-                if(check_message)
-                {
-                    rc = nvs_get_user_id(NULL);
-                    uint32_t user = (uint32_t)atoi(&data[7]);
-                    if(rc != ESP_OK)
-                    {
-                        rc = nvs_set_user_id(&user);
-                        if(rc != ESP_OK)
-                            return rc;
-                        testam_alata_denumire = true;
-                        memset(send,'\000',sizeof(send));
-                        strcpy(send,"YES");
-                        characters = strlen(send);
-                    }
-                    else
-                    {
-                        uint32_t user_id;
-                        nvs_get_user_id(&user_id);
-                        memset(send,'\000',sizeof(send));
-                        if(user_id == user)
-                        {
-                            testam_alata_denumire = true;
-                            strcpy(send,"YES");
-                        }
-                        else
-                        {
-                            ESP_LOGE("LOGARE","Nu este user");
-                            strcpy(send,"NO");
-                        }
-                        characters = strlen(send);
-                    }
-                }
+                define_user(&characters,send,data);
             }
             return rc;
         }

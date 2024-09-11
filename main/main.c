@@ -7,11 +7,12 @@
 
 #include "bleprph.h"
 static const char *tag = "NimBLE_BLE_PRPH";
-static int bleprph_gap_event(struct ble_gap_event *event, void *arg);
 static uint8_t own_addr_type;
-nvs_handle_t memory_handler;
-void ble_store_config_init(void);
 static uint8_t test2[6] = {123,255,97,255,255,99};
+static ble_addr_t addr;
+void ble_store_config_init(void);
+static int bleprph_gap_event(struct ble_gap_event *event, void *arg);
+
 static void bleprph_advertise(void)
 {
     struct ble_gap_adv_params adv_params;
@@ -79,8 +80,6 @@ static int bleprph_gap_event(struct ble_gap_event *event, void *arg)
     case BLE_GAP_EVENT_DISCONNECT:
         {
         extern bool testam_alata_denumire;
-        printf("Deconectare\n");
-        printf("\nAdress: %p\n",(void*)&memory_handler);
         testam_alata_denumire = false;
         MODLOG_DFLT(INFO, "disconnect; reason=%d ", event->disconnect.reason);
         MODLOG_DFLT(INFO, "\n");

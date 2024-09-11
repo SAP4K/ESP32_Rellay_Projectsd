@@ -67,10 +67,10 @@ esp_err_t nvs_get_user_id(uint32_t* get_user_id)
 {
      int rc;
      nvs_handle_t handler;
+     uint32_t user;
      rc = nvs_set_handler(&handler,ID_USER);
      if(rc != ESP_OK)
           return rc;
-     uint32_t user;
      rc = nvs_get_u32(handler,USER,&user);
      if(get_user_id != NULL)
      {

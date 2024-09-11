@@ -14,7 +14,7 @@ void adc_init()
     };
     ESP_ERROR_CHECK(adc_oneshot_config_channel(adc1_handle, ADC_CHANNEL_4, &config));
 }
-int adc_get_battery()
+int adc_get_battery(uint8_t* characters,char* send)
 {
      int adc_raw;
      int voltage;
@@ -46,4 +46,18 @@ int adc_get_battery()
      adc_cali_delete_scheme_curve_fitting(adc_calibration);
      #endif
      return sendd;
+     itoa(sendd,send,10);
+     if(sendd>=100)
+     {
+          *characters = 3;
+     }
+     if(sendd>=10 && sendd<100)
+     {
+          *characters = 2;
+     }
+     if(sendd<10)
+     {
+          *characters = 1;  
+     }
+     return 0;
 }
