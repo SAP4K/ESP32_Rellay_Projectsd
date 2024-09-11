@@ -129,9 +129,7 @@ static void bleprph_on_sync(void)
 
 void bleprph_host_task(void *param)
 {
-    
     nimble_port_run();
-
     nimble_port_freertos_deinit();
 }
 void app_main(void)
