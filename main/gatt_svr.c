@@ -115,8 +115,9 @@ esp_err_t define_user(uint8_t* characters,char* send,char* data)
     }
     return ESP_OK;
 }
-void order_processing(char* data,uint8_t* characters,char* send)
+esp_err_t order_processing(char* data,uint8_t* characters,char* send)
 {
+    int rc;
     switch(check_recived_data(data))
     {
         case 1:
@@ -147,7 +148,14 @@ void order_processing(char* data,uint8_t* characters,char* send)
         case 4:
         {
             ESP_LOGI(TAG,"Turn ON with repeat timer rellay 1");
-            tim_set_timer(&data[7]);
+            rc = tim_set_timer(&data[7],&pins[0]);
+            if(rc != ESP_OK)
+            {
+                size_t lenght = sizeof(INVALID_TIMER);
+                strncpy(send,INVALID_TIMER,lenght);
+                *characters = (uint8_t)lenght;
+                return rc;
+            }
         }break;
         case 5:
         {
@@ -181,7 +189,14 @@ void order_processing(char* data,uint8_t* characters,char* send)
         }break;
         case 68:
         {
-            tim_set_timer(&data[7]);
+            rc = tim_set_timer(&data[7],&pins[1]);
+            if(rc != ESP_OK)
+            {
+                size_t lenght = sizeof(INVALID_TIMER);
+                strncpy(send,INVALID_TIMER,lenght);
+                *characters = (uint8_t)lenght;
+                return rc;
+            }
             ESP_LOGI(TAG,"Turn ON with repeat timer rellay 2");
         }break;
         case 69:
@@ -200,6 +215,7 @@ void order_processing(char* data,uint8_t* characters,char* send)
             ESP_LOGI(TAG,"Error de aici");
         }break;
     }  
+    return ESP_OK;
 }
 static int gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,struct ble_gatt_access_ctxt *ctxt, void *arg)
 {

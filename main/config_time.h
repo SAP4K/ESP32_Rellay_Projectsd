@@ -4,6 +4,8 @@
 #include <freertos/task.h>
 #include "freertos/queue.h"
 #include "string.h"
+#include "pins.h"
+#define BUFFER_SIZE 100
 typedef struct castom_timer
 {
      esp_timer_handle_t timer_begin;
@@ -12,6 +14,7 @@ typedef struct castom_timer
      time_t seconds_timer_end;
      time_t data_set_time;
      char timer_type;
+     pin_state* pin;
 }castom_timer;
 
 typedef struct node_castom_timer
@@ -21,7 +24,7 @@ typedef struct node_castom_timer
      struct node_castom_timer* Node;
 }node_castom_timer;
 
-static node_castom_timer head = {.Node = NULL};
-void call_back();
+static node_castom_timer* head=NULL;
+void tim_callback_enable_output();
 void tim_init();
-void tim_set_timer(char*);
+esp_err_t tim_set_timer(char*,pin_state*);
