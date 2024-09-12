@@ -4,7 +4,7 @@
   "idf.openOcdConfigs": [
     "board/esp32c3-ftdi.cfg"
   ],
-  "idf.portWin": "COM21",
+  "idf.portWin": "COM3",
   "idf.flashType": "UART",
   "files.associations": {
     "nimble_port.h": "c",

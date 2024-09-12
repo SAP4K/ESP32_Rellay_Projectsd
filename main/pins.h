@@ -3,7 +3,6 @@ typedef struct pin_state
 {
  gpio_num_t pin;
  uint32_t state;
- bool rellay_state;
 } pin_state;
 static pin_state pins[2] = 
 {

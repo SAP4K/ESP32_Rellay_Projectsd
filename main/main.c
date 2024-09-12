@@ -135,6 +135,7 @@ void bleprph_host_task(void *param)
 void app_main(void)
 {
     int rc;
+    tim_init();
     pin_init_pins();
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {

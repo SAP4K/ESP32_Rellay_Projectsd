@@ -24,17 +24,6 @@ int8_t check_recived_data(char* data)
     memcpy(comparare,data,7);
     switch(data[0])
     {
-        case '0':
-        {
-                static bool config_time = true;
-                if(config_time){
-                    if(strcmp(comparare,"0x0000") == 0)
-                    {
-                        //inti_time(1715126300);
-                    }
-                    config_time = false;
-                }
-        }break;
         case '1':
         {
             nr_relay |= 0;
@@ -157,24 +146,12 @@ void order_processing(char* data,uint8_t* characters,char* send)
         }break;
         case 4:
         {
-            //prase_data_form_time(&pins[0], data,true,ctxt->om->om_len);
-            /*Timer pentru releul unu cu repetare*/
             ESP_LOGI(TAG,"Turn ON with repeat timer rellay 1");
+            tim_set_timer(&data[7]);
         }break;
         case 5:
         {
-            /*Oprire timer pentru primul releu cu repetare*/
             ESP_LOGI(TAG,"TURN OFF repeat timer for rellay 1");
-        }break;
-        case 6:
-        {
-            /*Pornire timer pentru primul releu fara repetare*/
-            //  prase_data_form_time(&pins[0], data,false,ctxt->om->om_len);
-            ESP_LOGI(TAG,"Turn ON with only one timer rellay 1");
-        }break;
-        case 7:
-        {
-            /*Oprire timer pentru primul releu fara repetare*/
         }break;
         case 65:
         {
@@ -193,35 +170,24 @@ void order_processing(char* data,uint8_t* characters,char* send)
         }break;
         case 66:
         {
-            pins[1].rellay_state = true;
+            
             pin_set_state(&pins[1],true);
             ESP_LOGI(TAG,"Turn ON rellay 2");     
         }break;
         case 67:
         {
-            pins[1].rellay_state = true;
             pin_set_state(&pins[1],false);
             ESP_LOGI(TAG,"Turn OFF rellay 2");
         }break;
         case 68:
         {
-            /*Timer pentru releul doi cu repetare*/
-            printf("Sunt aici rellay 2 run timer\n");
-            //prase_data_form_time(&pins[1], data,true,ctxt->om->om_len);
+            tim_set_timer(&data[7]);
             ESP_LOGI(TAG,"Turn ON with repeat timer rellay 2");
         }break;
         case 69:
         {
-                     /*Oprire timer pentru al doilea releu cu repetare*/
-        }break;
-        case 70: 
-        {
-            /*Pornire timer pentru al doilea releu fara repetare*/
-            //prase_data_form_time(&pins[1], data,false,ctxt->om->om_len);
-            ESP_LOGI(TAG,"Turn ON with only one timer rellay 2");
-        }break;
-        case 71: 
-        {
+            /*Oprire timer pentru al doilea releu cu repetare*/
+            ESP_LOGI(TAG,"Turn OFF with repeat timer rellay 2");
         }break;
         case 99:
         {
